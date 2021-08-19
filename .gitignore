@@ -3,3 +3,5 @@
 ################################################################################
 
 /System.X/System.X/bin/Debug/netcoreapp3.1
+*.suo
+/System.X/System.X/obj
