@@ -1,7 +1,9 @@
-﻿namespace System.Security.Cryptography
+﻿namespace System.X.Cryptography
 {
     public sealed class CryptoHelper
     {
+        private CryptoHelper() { }
+        internal static readonly CryptoHelper Instance = new CryptoHelper();
 
         public readonly byte[] rgbIV = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
         public readonly byte[] aesIV = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };

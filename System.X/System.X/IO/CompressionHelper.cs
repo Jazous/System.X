@@ -10,18 +10,19 @@ namespace System.X.IO
     {
         internal static readonly CompressionHelper Instance = new CompressionHelper();
 
-        public async Threading.Tasks.Task<string> BZip2Compress(string value)
+        private CompressionHelper() { }
+        public async Threading.Tasks.Task<string> BZip2(string value)
         {
-            return Convert.ToBase64String(await BZip2Compress(System.Text.Encoding.UTF8.GetBytes(value)));
+            return Convert.ToBase64String(await BZip2(System.Text.Encoding.UTF8.GetBytes(value)));
         }
-        public async Threading.Tasks.Task<string> BZip2Decompress(string value)
+        public async Threading.Tasks.Task<string> UnBZip2(string value)
         {
             using (var inputStream = new MemoryStream(Convert.FromBase64String(value)))
             using (var zipStream = new ICSharpCode.SharpZipLib.BZip2.BZip2InputStream(inputStream))
             using (var reader = new StreamReader(zipStream, System.Text.Encoding.UTF8))
                 return await reader.ReadToEndAsync();
         }
-        public async Threading.Tasks.Task<byte[]> BZip2Compress(byte[] bytes)
+        public async Threading.Tasks.Task<byte[]> BZip2(byte[] bytes)
         {
             using (var outputStream = new System.IO.MemoryStream())
             {
@@ -33,7 +34,7 @@ namespace System.X.IO
                 return outputStream.ToArray();
             }
         }
-        public async Threading.Tasks.Task<byte[]> BZip2Decompress(byte[] bytes)
+        public async Threading.Tasks.Task<byte[]> UnBZip2(byte[] bytes)
         {
             using (var ms = new MemoryStream(bytes))
             using (var zipStream = new ICSharpCode.SharpZipLib.BZip2.BZip2InputStream(ms))
@@ -43,35 +44,35 @@ namespace System.X.IO
                 return buffer;
             }
         }
-        public async Threading.Tasks.Task<string> GZipCompress(string value)
+        public async Threading.Tasks.Task<string> GZip(string value)
         {
             var bytes = new byte[value.Length];
             int index = 0;
             foreach (char item in value.ToCharArray())
                 bytes[index++] = (byte)item;
 
-            var buffer = await GZipCompress(bytes);
+            var buffer = await GZip(bytes);
             var sb = new System.Text.StringBuilder(buffer.Length);
             foreach (byte item in buffer)
                 sb.Append((char)item);
 
             return sb.ToString();
         }
-        public async Threading.Tasks.Task<string> GZipDecompress(string value)
+        public async Threading.Tasks.Task<string> UnGZip(string value)
         {
             var bytes = new byte[value.Length];
             int index = 0;
             foreach (char item in value.ToCharArray())
                 bytes[index++] = (byte)item;
 
-            var buffer = await GZipDecompress(bytes);
+            var buffer = await UnGZip(bytes);
             var sb = new System.Text.StringBuilder(buffer.Length);
             for (int i = 0; i < buffer.Length; i++)
                 sb.Append((char)buffer[i]);
 
             return sb.ToString();
         }
-        public async Threading.Tasks.Task<byte[]> GZipCompress(byte[] bytes)
+        public async Threading.Tasks.Task<byte[]> GZip(byte[] bytes)
         {
             using (var ms = new System.IO.MemoryStream())
             {
@@ -81,16 +82,14 @@ namespace System.X.IO
                 return ms.ToArray();
             }
         }
-        public async Threading.Tasks.Task<byte[]> GZipDecompress(byte[] bytes)
+        public async Threading.Tasks.Task<byte[]> UnGZip(byte[] bytes)
         {
             using (var ms = new System.IO.MemoryStream(bytes))
+            using (var sr = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionMode.Decompress))
             {
-                using (var sr = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionMode.Decompress))
-                {
-                    byte[] buffer = new byte[sr.Length];
-                    await sr.ReadAsync(buffer, 0, buffer.Length);
-                    return buffer;
-                }
+                byte[] buffer = new byte[sr.Length];
+                await sr.ReadAsync(buffer, 0, buffer.Length);
+                return buffer;
             }
         }
 
@@ -99,10 +98,10 @@ namespace System.X.IO
         /// </summary>
         /// <param name="sourceDirName">The path to the directory to be archived, specified as a relative or absolute path.</param>
         /// <returns>The absolute path of the archive to be created.</returns>
-        public string ZipFileCompress(string sourceDirName)
+        public string Zip(string sourceDirName)
         {
             string tempFile = Path.GetTempFileName();
-            ZipFileCompress(sourceDirName, tempFile);
+            Zip(sourceDirName, tempFile);
             return tempFile;
         }
         /// <summary>
@@ -110,7 +109,7 @@ namespace System.X.IO
         /// </summary>
         /// <param name="sourceDirName">The path to the directory to be archived, specified as a relative or absolute path.</param>
         /// <param name="destFileName">The path of the archive to be created, specified as a relative or absolute path.</param>
-        public void ZipFileCompress(string sourceDirName, string destFileName)
+        public void Zip(string sourceDirName, string destFileName)
         {
             System.IO.Compression.ZipFile.CreateFromDirectory(sourceDirName, destFileName);
         }
@@ -120,10 +119,10 @@ namespace System.X.IO
         /// <param name="sourceFileName">The path on the file system to the archive that is to be extracted.</param>
         /// <param name="overwrite">true to overwrite files; false otherwise.</param>
         /// <returns>The path to the destination directory on the file system.</returns>
-        public string ZipFileExtract(string sourceFileName, bool overwrite = true)
+        public string ZipExtract(string sourceFileName, bool overwrite = true)
         {
             string tempDir = Fn.NewTempDir();
-            ZipFileExtract(sourceFileName, tempDir, overwrite);
+            ZipExtract(sourceFileName, tempDir, overwrite);
             return tempDir;
         }
         /// <summary>
@@ -132,7 +131,7 @@ namespace System.X.IO
         /// <param name="sourceFileName">The path on the file system to the archive that is to be extracted.</param>
         /// <param name="destDirName">The path to the destination directory on the file system.</param>
         /// <param name="overwrite">true to overwrite files; false otherwise.</param>
-        public void ZipFileExtract(string sourceFileName, string destDirName, bool overwrite = true)
+        public void ZipExtract(string sourceFileName, string destDirName, bool overwrite = true)
         {
             System.IO.Directory.CreateDirectory(destDirName);
             System.IO.Compression.ZipFile.ExtractToDirectory(sourceFileName, destDirName, overwrite);
@@ -142,10 +141,10 @@ namespace System.X.IO
         /// </summary>
         /// <param name="sourceDirName">The path to the directory to be archived, specified as a relative or absolute path.</param>
         /// <returns>The path of the archive to be created.</returns>
-        public string TarFile(string sourceDirName)
+        public string Tar(string sourceDirName)
         {
             var tempFile = Path.GetTempFileName();
-            TarFile(sourceDirName, tempFile);
+            Tar(sourceDirName, tempFile);
             return tempFile;
         }
         /// <summary>
@@ -153,7 +152,7 @@ namespace System.X.IO
         /// </summary>
         /// <param name="sourceDirName">The path to the directory to be archived, specified as a relative or absolute path.</param>
         /// <param name="destFileName">The path of the archive to be created, specified as a relative or absolute path.</param>
-        public void TarFile(string sourceDirName, string destFileName)
+        public void Tar(string sourceDirName, string destFileName)
         {
             var files = Directory.GetFiles(sourceDirName);
             using (var fs = File.OpenWrite(destFileName))
@@ -174,10 +173,10 @@ namespace System.X.IO
         /// </summary>
         /// <param name="sourceFileName">The path on the file system to the archive that is to be extracted.</param>
         /// <returns>The path to the destination directory on the file system.</returns>
-        public string TarFileExtract(string sourceFileName)
+        public string TarExtract(string sourceFileName)
         {
             string tempDir = Fn.NewTempDir();
-            TarFileExtract(sourceFileName, tempDir);
+            TarExtract(sourceFileName, tempDir);
             return tempDir;
         }
         /// <summary>
@@ -185,7 +184,7 @@ namespace System.X.IO
         /// </summary>
         /// <param name="sourceFileName">The path on the file system to the archive that is to be extracted.</param>
         /// <param name="destDirName">The path to the destination directory on the file system.</param>
-        public void TarFileExtract(string sourceFileName, string destDirName)
+        public void TarExtract(string sourceFileName, string destDirName)
         {
             System.IO.Directory.CreateDirectory(destDirName);
             using (var fs = File.OpenRead(sourceFileName))
@@ -198,10 +197,10 @@ namespace System.X.IO
         /// </summary>
         /// <param name="sourceDirName">The path to the directory to be archived, specified as a relative or absolute path.</param>
         /// <returns>The path of the archive to be created.</returns>
-        public string TarGzFileCompress(string sourceDirName)
+        public string Targz(string sourceDirName)
         {
             string tempFile = Path.GetTempFileName();
-            TarGzFileCompress(sourceDirName, tempFile);
+            Targz(sourceDirName, tempFile);
             return tempFile;
         }
         /// <summary>
@@ -209,7 +208,7 @@ namespace System.X.IO
         /// </summary>
         /// <param name="sourceDirName">The path to the directory to be archived, specified as a relative or absolute path.</param>
         /// <param name="destFileName">The path of the archive to be created, specified as a relative or absolute path.</param>
-        public void TarGzFileCompress(string sourceDirName, string destFileName)
+        public void Targz(string sourceDirName, string destFileName)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(destFileName));
             using (var fs = File.OpenWrite(destFileName))
@@ -222,10 +221,10 @@ namespace System.X.IO
         /// </summary>
         /// <param name="sourceFileName">The path on the file system to the archive that is to be extracted.</param>
         /// <returns>The path to the destination directory on the file system.</returns>
-        public string TarGzFileExtract(string sourceFileName)
+        public string TargzExtract(string sourceFileName)
         {
             string tempDir = Fn.NewTempDir();
-            TarGzFileExtract(sourceFileName, tempDir);
+            TargzExtract(sourceFileName, tempDir);
             return tempDir;
         }
         /// <summary>
@@ -233,7 +232,7 @@ namespace System.X.IO
         /// </summary>
         /// <param name="sourceFileName">The path on the file system to the archive that is to be extracted.</param>
         /// <param name="destDirName">The path to the destination directory on the file system.</param>
-        public void TarGzFileExtract(string sourceFileName, string destDirName)
+        public void TargzExtract(string sourceFileName, string destDirName)
         {
             Directory.CreateDirectory(destDirName);
             using (var fs = File.OpenRead(sourceFileName))

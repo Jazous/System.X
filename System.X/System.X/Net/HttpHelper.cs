@@ -11,7 +11,9 @@ namespace System.X.Net
 {
     public sealed class HttpHelper
     {
-        async Task<string> GET(string url, string token)
+        internal static readonly HttpHelper Instance = new HttpHelper();
+        private HttpHelper() { }
+        public async Task<string> GET(string url, string token)
         {
             using (var client = new System.Net.Http.HttpClient())
             {

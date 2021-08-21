@@ -2,11 +2,58 @@
 {
     public sealed class TextHelper
     {
-        static internal readonly TextHelper Instance = new TextHelper();
+        internal static readonly TextHelper Instance = new TextHelper();
         private TextHelper() { }
 
-        public string Alphabet { get => "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"; }
+        static readonly string _vercode = "23456789AaBbCcDdEeFfGgHhJjKkMmNnPpQqRrSsTtUuVvWwXxYyZz";
 
+        public Int64 NewUniqueId()
+        {
+            return BitConverter.ToInt64(NewSequentialGuid().ToByteArray(), 0);
+        }
+        public Guid NewSequentialGuid()
+        {
+            byte[] guidArray = Guid.NewGuid().ToByteArray();
+            DateTime baseDate = new DateTime(1900, 1, 1);
+            DateTime now = DateTime.Now;
+            TimeSpan days = new TimeSpan(now.Ticks - baseDate.Ticks);
+            TimeSpan msecs = now.TimeOfDay;
+            byte[] daysArray = BitConverter.GetBytes(days.Days);
+            byte[] msecsArray = BitConverter.GetBytes((long)(msecs.TotalMilliseconds / 3.333333));
+            Array.Reverse(daysArray);
+            Array.Reverse(msecsArray);
+            Array.Copy(daysArray, daysArray.Length - 2, guidArray, guidArray.Length - 6, 2);
+            Array.Copy(msecsArray, msecsArray.Length - 4, guidArray, guidArray.Length - 4, 4);
+            return new Guid(guidArray);
+        }
+        public string NewGuid(string format)
+        {
+            return Guid.NewGuid().ToString(format);
+        }
+        public string NewGuid()
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+        public int NewRandom(int minValue, int maxValue)
+        {
+            byte[] bytes = new byte[4];
+            using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
+                rng.GetBytes(bytes);
+            return new Random(BitConverter.ToInt32(bytes, 0)).Next(minValue, maxValue);
+        }
+        public string NewVerCode(int count = 4)
+        {
+            byte[] bytes = new byte[4];
+            using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
+                rng.GetBytes(bytes);
+            var random = new Random(BitConverter.ToInt32(bytes, 0));
+            var chs = new char[count];
+            var len = _vercode.Length;
+            for (int i = 0; i < chs.Length; i++)
+                chs[i] = _vercode[random.Next(0, len)];
+            return new string(chs);
+        }
         public string ToBitString(byte[] value)
         {
             global::System.Int32 length = value.Length * 2;

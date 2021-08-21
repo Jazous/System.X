@@ -1,10 +1,14 @@
 ﻿using System.Collections.Specialized;
 using System.Text;
+using System.IO;
 
-namespace System.IO
+namespace System.X.IO
 {
-    public sealed class Profile
+    public sealed class ProfileHelper
     {
+        internal static readonly ProfileHelper Instance=new ProfileHelper();
+        private ProfileHelper() { }
+
         /// <summary>
         /// 将指定的键和值写到指定的节点，如果已经存在则替换
         /// </summary>
@@ -129,5 +133,30 @@ namespace System.IO
         static extern long GetPrivateProfileString(string lpAppName, string lpKeyName, string lpDefault, System.Text.StringBuilder lpReturnedString, int nSize, string lpFileName);
         [System.Runtime.InteropServices.DllImport("kernel32")]
         static extern long GetPrivateProfileSection(string lpAppName, byte[] lpReturnedString, int nSize, string lpFileName);
+
+        public bool IsValidPathChars(string directoryName)
+        {
+            char[] chars = System.IO.Path.GetInvalidPathChars();
+            char[] chs = directoryName.ToCharArray();
+            foreach (char ch in chs)
+            {
+                if (Array.BinarySearch(chars, ch) >= 0) return false;
+            }
+            return true;
+        }
+        /// <summary>
+        /// 指示是否是合法的文件名称。
+        /// </summary>
+        /// <param name="fileName">文件名称。</param>
+        public bool IsValidFileName(string fileName)
+        {
+            char[] chars = System.IO.Path.GetInvalidFileNameChars();
+            char[] chs = fileName.ToCharArray();
+            foreach (char ch in chs)
+            {
+                if (Array.BinarySearch(chars, ch) >= 0) return false;
+            }
+            return true;
+        }
     }
 }

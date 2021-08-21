@@ -10,17 +10,19 @@ namespace System
     public sealed class Fn
     {
         public static Text.Encoding UTF8 { get => System.Text.Encoding.UTF8; }
+        public const string Alphabet = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
+
         /// <summary>
         /// 当前运行的操作系统平台。
         /// </summary>
         public static X.Enums.OSPlatforms OSPlatform { get; }
 
-        static System.IO.FileHelper Profile { get; set; }
-        public static System.Text.HtmlHelper HTML { get; set; }
-        public static System.X.Text.TextHelper Text { get; set; }
-        public static System.Security.Cryptography.CryptoHelper Crypto { get; set; }
-        public static System.X.Net.HttpHelper HTTP { get; set; }
-        public static System.X.IO.CompressionHelper Compression { get; set; }
+        public static System.X.IO.ProfileHelper Profile { get => System.X.IO.ProfileHelper.Instance; }
+        public static System.X.Text.HtmlHelper Html { get => System.X.Text.HtmlHelper.Instance; }
+        public static System.X.Text.TextHelper Text { get => System.X.Text.TextHelper.Instance; }
+        public static System.X.Cryptography.CryptoHelper Crypto { get => System.X.Cryptography.CryptoHelper.Instance; }
+        public static System.X.Net.HttpHelper Http { get => X.Net.HttpHelper.Instance; }
+        public static System.X.IO.CompressionHelper Compress { get => X.IO.CompressionHelper.Instance; }
 
         static Fn()
         {
@@ -47,23 +49,18 @@ namespace System
             bool result;
             return bool.TryParse(value, out result) ? result : false;
         }
-        public static int ToInt32(string value)
+        public static int? ToInt32(string value)
         {
-            if (string.IsNullOrEmpty(value))
-                return 0;
-            int result;
-            if (int.TryParse(value, Globalization.NumberStyles.Integer, Globalization.NumberFormatInfo.CurrentInfo, out result))
-                return result;
-            return 0;
+            return XExtension.ToInt32(value);
         }
-        public static decimal ToDecimal(string value)
+        public static decimal? ToDecimal(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
                 return decimal.Zero;
             decimal result;
             if (decimal.TryParse(value, Globalization.NumberStyles.Integer, Globalization.NumberFormatInfo.CurrentInfo, out result))
                 return result;
-            return decimal.Zero;
+            return null;
         }
         public static DateTime? ToDateTime(string value)
         {
@@ -93,13 +90,6 @@ namespace System
                 return result;
             return null;
         }
-        public static T ToEnum<T>(string value, T defaultValue) where T : struct
-        {
-            T result;
-            if (Enum.TryParse(value, true, out result))
-                return result;
-            return defaultValue;
-        }
         public static Collections.Generic.List<NameValue> ToList<T>() where T : Enum
         {
             var result = new Collections.Generic.List<NameValue>();
@@ -115,32 +105,9 @@ namespace System
             }
             return result;
         }
-        public static Int64 NewUniqueId()
+        public static string NewGuid(string format = "N")
         {
-            return BitConverter.ToInt64(NewSequentialGuid().ToByteArray(), 0);
-        }
-        public static Guid NewSequentialGuid()
-        {
-            byte[] guidArray = Guid.NewGuid().ToByteArray();
-            DateTime baseDate = new DateTime(1900, 1, 1);
-            DateTime now = DateTime.Now;
-            TimeSpan days = new TimeSpan(now.Ticks - baseDate.Ticks);
-            TimeSpan msecs = now.TimeOfDay;
-            byte[] daysArray = BitConverter.GetBytes(days.Days);
-            byte[] msecsArray = BitConverter.GetBytes((long)(msecs.TotalMilliseconds / 3.333333));
-            Array.Reverse(daysArray);
-            Array.Reverse(msecsArray);
-            Array.Copy(daysArray, daysArray.Length - 2, guidArray, guidArray.Length - 6, 2);
-            Array.Copy(msecsArray, msecsArray.Length - 4, guidArray, guidArray.Length - 4, 4);
-            return new Guid(guidArray);
-        }
-        public static string NewShortGuid()
-        {
-            return Guid.NewGuid().ToString("N");
-        }
-        public static string NewGuid()
-        {
-            return Guid.NewGuid().ToString("D");
+            return Guid.NewGuid().ToString(format);
         }
         public static string NewTempDir()
         {
@@ -170,13 +137,6 @@ namespace System
                 stream.Close();
             return tempFile;
         }
-        public static int NewRandom(int minValue, int maxValue)
-        {
-            byte[] bytes = new byte[4];
-            using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
-                rng.GetBytes(bytes);
-            return new Random(BitConverter.ToInt32(bytes, 0)).Next(minValue, maxValue);
-        }
 
         public static string MD5(string value)
         {
@@ -195,19 +155,19 @@ namespace System
             return Fn.Crypto.SHA1(bytes);
         }
 
-        public static string NewZipFile(string sourceDirName)
+        public static string Zip(string sourceDirName)
         {
-            return Compression.ZipFileCompress(sourceDirName);
+            return Compression.Zip(sourceDirName);
         }
         public static string ZipExtract(string sourceFileName)
         {
             string ext = Path.GetExtension(sourceFileName).ToLower();
             switch (ext)
             {
-                case ".zip": return Compression.ZipFileExtract(sourceFileName);
-                case ".tar": return Compression.TarFileExtract(sourceFileName);
-                case ".gz": return Compression.TarGzFileExtract(sourceFileName);
-                default: return Compression.ZipFileExtract(sourceFileName);
+                case ".zip": return Compression.ZipExtract(sourceFileName);
+                case ".tar": return Compression.TarExtract(sourceFileName);
+                case ".gz": return Compression.TargzExtract(sourceFileName);
+                default: return Compression.ZipExtract(sourceFileName);
             }
         }
         public static bool IsLocalIpOrHost(string host)
@@ -220,8 +180,8 @@ namespace System
                 return true;
 
             IPHostEntry IpEntry = Dns.GetHostEntry(Dns.GetHostName());
-            var _ips = IpEntry.AddressList.Where(c => c.AddressFamily == AddressFamily.InterNetwork).Select(c => c.ToString()).ToArray();
-            return _ips.Any(c => c == host);
+            var ips = IpEntry.AddressList.Where(c => c.AddressFamily == AddressFamily.InterNetwork).Select(c => c.ToString()).ToArray();
+            return ips.Any(c => c == host);
         }
 
         public static void CopyFolder(string sourceDirName, string destDirName, params string[] skipFiles)

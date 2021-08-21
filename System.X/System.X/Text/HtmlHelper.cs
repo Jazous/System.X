@@ -1,14 +1,15 @@
-﻿namespace System.Text
+﻿namespace System.X.Text
 {
-    public sealed partial class HtmlHelper
+    public sealed class HtmlHelper
     {
-        private HtmlHelper() { }
-        public static readonly HtmlHelper Instance = new HtmlHelper();
+        
+        internal static readonly HtmlHelper Instance = new HtmlHelper();
 
         private static readonly string[] _headerEncodingTable = new string[] {
             "%00", "%01", "%02", "%03", "%04", "%05", "%06", "%07", "%08", "%09", "%0a", "%0b", "%0c", "%0d", "%0e", "%0f",
             "%10", "%11", "%12", "%13", "%14", "%15", "%16", "%17", "%18", "%19", "%1a", "%1b", "%1c", "%1d", "%1e", "%1f"
          };
+        private HtmlHelper() { }
 
         public string HtmlAttributeEncode(string value)
         {
@@ -101,7 +102,7 @@
             {
                 return str;
             }
-            StringBuilder builder = new StringBuilder();
+            var builder = new System.Text.StringBuilder();
             foreach (char ch in value)
             {
                 if ((ch < ' ') && (ch != '\t'))
