@@ -117,24 +117,28 @@
             while (index > -1);
             return source.Remove(index + vLength, sLength - index - vLength);
         }
+
         public static string ToString(this DateTime? source, string format)
         {
             return source != null ? source.Value.ToString(format) : string.Empty;
         }
-        public static string ToString(this DateTime? source)
-        {
-            return source != null ? source.Value.ToString("yyyy-MM-dd HH:mm") : string.Empty;
-        }
         /// <summary>
-        /// 返回日期格式：MM-dd
+        /// 格式：yyyy-MM-dd HH:mm:ss
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static string ToDate(this DateTime source)
+        public static string ToString(this DateTime? source)
         {
-            if (source.Year == DateTime.Today.Year)
-                return source.ToString("MM-dd");
-            return source != null ? source.ToString("yyyy-MM-dd") : string.Empty;
+            return source != null ? ToString(source.Value) : string.Empty;
+        }
+        /// <summary>
+        /// 格式：yyyy-MM-dd HH:mm:ss
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static string ToString(this DateTime source)
+        {
+            return source.ToString("yyyy-MM-dd HH:mm:ss");
         }
         /// <summary>
         /// 返回日期格式：MM-dd、yyyy-MM-dd
@@ -176,10 +180,6 @@
         /// <returns></returns>
         public static string ToShowDate_CN(this DateTime source)
         {
-            if(System.Threading.Thread.CurrentThread.CurrentCulture.Name == "zh-CN")
-            {
-
-            }
             DateTime today = DateTime.Today;
             if (source.Year == today.Year)
             {
@@ -194,6 +194,7 @@
             }
             return source.ToString("yyyy年MM月dd日");
         }
+
         public static string Remove(this string source, string value)
         {
             if (value == null)
@@ -216,10 +217,29 @@
             }
             return source.Replace(value, string.Empty);
         }
-        public static TValue GetValue<TKey, TValue>(this System.Collections.Generic.IDictionary<TKey, TValue> source, TKey key, TValue defaultValue)
+
+        public static string GetDescription(this Enum value)
+        {
+            string text = value.ToString();
+            System.Reflection.FieldInfo field = value.GetType().GetField(text);
+            object[] attrs = field.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false);
+            return attrs.Length == 0 ? text : ((System.ComponentModel.DescriptionAttribute)attrs[0]).Description;
+        }
+
+        public static TValue Get<TKey, TValue>(this System.Collections.Generic.IDictionary<TKey, TValue> source, TKey key, TValue defaultValue)
         {
             TValue result;
             return source.TryGetValue(key, out result) ? result : defaultValue;
+        }
+        public static TValue Get<TValue>(this System.Collections.Generic.IDictionary<string, TValue> source, string key) where TValue : class
+        {
+            TValue result;
+            return source.TryGetValue(key, out result) ? result : null;
+        }
+        public static string Get(this System.Collections.Generic.IDictionary<string, string> source, string key)
+        {
+            string result;
+            return source.TryGetValue(key, out result) ? result : string.Empty;
         }
     }
 }

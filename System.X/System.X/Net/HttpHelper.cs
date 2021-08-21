@@ -21,28 +21,29 @@ namespace System.X.Net
                 return await response.Content.ReadAsStringAsync();
             }
         }
-        public async Task<string> GET_Download(string url, string token)
+        public async Task<string> GET_DownloadFile(string url, string token)
         {
             string path = Path.GetTempFileName();
-            await GET_Download(url, token, path);
+            await GET_DownloadFile(url, token, path);
             return path;
         }
-        async Task GET_Download(string url, string token, string path)
+        public async Task GET_DownloadFile(string url, string token, string destFileName)
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(destFileName));
             using (var client = new System.Net.Http.HttpClient())
             {
                 client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", token);
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
                 var stream = await response.Content.ReadAsStreamAsync();
-                using (var fileStream = System.IO.File.Open(path, FileMode.OpenOrCreate, FileAccess.Write))
+                using (var fileStream = System.IO.File.OpenWrite(destFileName))
                 {
                     await stream.CopyToAsync(fileStream);
                     fileStream.Flush();
                 }
             }
         }
-        async Task<byte[]> GET_DownloadBytes(string url, string token)
+        public async Task<byte[]> GET_Bytes(string url, string token)
         {
             using (var client = new System.Net.Http.HttpClient())
             {
@@ -64,10 +65,10 @@ namespace System.X.Net
             {
                 var response = await client.PostAsync(url, content);
                 response.EnsureSuccessStatusCode();
-                return response.Content.ReadAsStringAsync().Result;
+                return await response.Content.ReadAsStringAsync();
             }
         }
-        public async Task<string> POST_Form(string url, string token, IEnumerable<NameValue> formData, params FileInfo[] files)
+        public async Task<string> POST_FormData(string url, string token, IEnumerable<NameValue> formData, params FileInfo[] files)
         {
             var content = new MultipartFormDataContent();
             if (files != null)
@@ -88,13 +89,13 @@ namespace System.X.Net
                 return await response.Content.ReadAsStringAsync();
             }
         }
-        public async Task<string> POST_Download(string url, string token, string jsonData)
+        public async Task<string> POST_DownloadFile(string url, string token, string jsonData)
         {
             string path = Path.GetTempFileName();
-            await POST_Download(url, token, jsonData, path);
+            await POST_DownloadFile(url, token, jsonData, path);
             return path;
         }
-        async Task POST_Download(string url, string token, string jsonData, string path)
+        async Task POST_DownloadFile(string url, string token, string jsonData, string path)
         {
             var content = new StringContent(jsonData, Encoding.UTF8);
             content.Headers.TryAddWithoutValidation("Authorization", token);
@@ -105,14 +106,14 @@ namespace System.X.Net
                 var response = await client.PostAsync(url, content);
                 response.EnsureSuccessStatusCode();
                 var stream = await response.Content.ReadAsStreamAsync();
-                using (var fileStream = System.IO.File.Open(path, FileMode.OpenOrCreate, FileAccess.Write))
+                using (var fileStream = System.IO.File.OpenWrite(path))
                 {
                     await stream.CopyToAsync(fileStream);
                     fileStream.Flush();
                 }
             }
         }
-        async Task<byte[]> POST_DownloadBytes(string url, string token, string jsonData)
+        async Task<byte[]> POST_Bytes(string url, string token, string jsonData)
         {
             var content = new StringContent(jsonData, Encoding.UTF8);
             content.Headers.TryAddWithoutValidation("Authorization", token);

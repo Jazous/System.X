@@ -22,6 +22,6 @@
         /// 数据记录的总个数。
         /// </summary>
         [global::System.Runtime.Serialization.DataMember]
-        public int RecordCount { get; set; }
+        public int TotalCount { get; set; }
     }
 }

@@ -9,11 +9,18 @@ namespace System
 {
     public sealed class Fn
     {
-        public static Text.Encoding UTF8 = System.Text.Encoding.UTF8;
+        public static Text.Encoding UTF8 { get => System.Text.Encoding.UTF8; }
         /// <summary>
         /// 当前运行的操作系统平台。
         /// </summary>
         public static X.Enums.OSPlatforms OSPlatform { get; }
+
+        static System.IO.FileHelper Profile { get; set; }
+        public static System.Text.HtmlHelper HTML { get; set; }
+        public static System.X.Text.TextHelper Text { get; set; }
+        public static System.Security.Cryptography.CryptoHelper Crypto { get; set; }
+        public static System.X.Net.HttpHelper HTTP { get; set; }
+        public static System.X.IO.CompressionHelper Compression { get; set; }
 
         static Fn()
         {
@@ -63,8 +70,20 @@ namespace System
             if (string.IsNullOrWhiteSpace(value))
                 return null;
             DateTime result;
+
             if (DateTime.TryParse(value, out result))
                 return result;
+            if (DateTime.TryParseExact(value, new string[] { "yyyy/MM/dd HH:mm", "yyyy-MM-dd HH:mm", "yyyy/MM/dd HH", "yyyy-MM-dd HH" }, Globalization.DateTimeFormatInfo.CurrentInfo, Globalization.DateTimeStyles.None, out result))
+                return result;
+            return null;
+        }
+        public static DateTime? ToDate(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return null;
+            DateTime result;
+            if (DateTime.TryParse(value, out result))
+                return result.Date;
             return null;
         }
         public static T? ToEnum<T>(string value) where T : struct
@@ -74,11 +93,33 @@ namespace System
                 return result;
             return null;
         }
+        public static T ToEnum<T>(string value, T defaultValue) where T : struct
+        {
+            T result;
+            if (Enum.TryParse(value, true, out result))
+                return result;
+            return defaultValue;
+        }
+        public static Collections.Generic.List<NameValue> ToList<T>() where T : Enum
+        {
+            var result = new Collections.Generic.List<NameValue>();
+            var values = Enum.GetValues(typeof(T));
+            foreach (var item in values)
+            {
+                var nv = new NameValue();
+                var name = item.ToString();
+                var descAttr = item.GetType().GetField(name).GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false).FirstOrDefault();
+                nv.Name = descAttr != null ? ((System.ComponentModel.DescriptionAttribute)descAttr).Description : name;
+                nv.Value = Convert.ToInt32(item).ToString();
+                result.Add(nv);
+            }
+            return result;
+        }
         public static Int64 NewUniqueId()
         {
-            return BitConverter.ToInt64(NewSequenceGuid().ToByteArray(), 0);
+            return BitConverter.ToInt64(NewSequentialGuid().ToByteArray(), 0);
         }
-        public static Guid NewSequenceGuid()
+        public static Guid NewSequentialGuid()
         {
             byte[] guidArray = Guid.NewGuid().ToByteArray();
             DateTime baseDate = new DateTime(1900, 1, 1);
@@ -93,152 +134,82 @@ namespace System
             Array.Copy(msecsArray, msecsArray.Length - 4, guidArray, guidArray.Length - 4, 4);
             return new Guid(guidArray);
         }
+        public static string NewShortGuid()
+        {
+            return Guid.NewGuid().ToString("N");
+        }
         public static string NewGuid()
         {
-            return Guid.NewGuid().ToString();
+            return Guid.NewGuid().ToString("D");
         }
-        public static string NewGuid(string format)
+        public static string NewTempDir()
         {
-            return Guid.NewGuid().ToString(format);
+            string tempDir = string.Concat(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(tempDir);
+            return tempDir;
         }
-        public static string GetDescription(Enum value)
+        public static async Task<string> NewTempFile(byte[] bytes)
         {
-            string text = value.ToString();
-            System.Reflection.FieldInfo field = value.GetType().GetField(text);
-            object[] attrs = field.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false);
-            return attrs.Length == 0 ? text : ((System.ComponentModel.DescriptionAttribute)attrs[0]).Description;
+            string tempFile = Path.GetTempFileName();
+            using (var fileStream = File.Open(tempFile, FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                await fileStream.WriteAsync(bytes, 0, bytes.Length);
+                fileStream.Flush();
+            }
+            return tempFile;
         }
-
-        static System.IO.FileHelper Profile { get; set; }
-        public static System.Text.HtmlHelper HTML { get; set; }
-        public static System.X.Text.TextHelper Text { get; set; }
-        public static System.Security.Cryptography.CryptoHelper Crypto { get; set; }
-        public static System.X.Net.HttpHelper HTTP { get; set; }
-
-
-        /// <summary>
-        /// 生成随机数。
-        /// </summary>
-        /// <param name="minValue">最小值。（包括）</param>
-        /// <param name="maxValue">最大值。（不包括）</param>
-        /// <returns></returns>
-        public static int Next(int minValue, int maxValue)
+        public static async Task<string> NewTempFile(Stream stream, bool leaveOpen = false)
+        {
+            string tempFile = Path.GetTempFileName();
+            using (var fileStream = File.Open(tempFile, FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                await stream.CopyToAsync(fileStream);
+                fileStream.Flush();
+            }
+            if (!leaveOpen)
+                stream.Close();
+            return tempFile;
+        }
+        public static int NewRandom(int minValue, int maxValue)
         {
             byte[] bytes = new byte[4];
             using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
-            {
                 rng.GetBytes(bytes);
-            }
             return new Random(BitConverter.ToInt32(bytes, 0)).Next(minValue, maxValue);
         }
 
-        /// <summary>
-        /// 字符串压缩
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string Compress(string input)
+        public static string MD5(string value)
         {
-            string result = string.Empty;
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(input);
-            using (var outputStream = new System.IO.MemoryStream())
-            {
-                using (var zipStream = new ICSharpCode.SharpZipLib.BZip2.BZip2OutputStream(outputStream))
-                {
-                    zipStream.Write(buffer, 0, buffer.Length);
-                    zipStream.Close();
-                }
-                return Convert.ToBase64String(outputStream.ToArray());
-            }
+            return Fn.Crypto.MD5(value);
         }
-        /// <summary>
-        /// 解压缩
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string Decompress(string input)
+        public static string MD5(byte[] bytes)
         {
-            string result = string.Empty;
-            byte[] buffer = Convert.FromBase64String(input);
-            using (Stream inputStream = new MemoryStream(buffer))
-            {
-                var zipStream = new ICSharpCode.SharpZipLib.BZip2.BZip2InputStream(inputStream);
-
-                using (StreamReader reader = new StreamReader(zipStream, System.Text.Encoding.UTF8))
-                {
-                    //输出
-                    result = reader.ReadToEnd();
-                }
-            }
-
-            return result;
+            return Fn.Crypto.MD5(bytes);
+        }
+        public static string SHA1(string value)
+        {
+            return Fn.Crypto.SHA1(value);
+        }
+        public static string SHA1(byte[] bytes)
+        {
+            return Fn.Crypto.SHA1(bytes);
         }
 
-        public static string Zip(string value)
+        public static string NewZipFile(string sourceDirName)
         {
-            //Transform string into byte[] 
-            byte[] byteArray = new byte[value.Length];
-            int indexBA = 0;
-            foreach (char item in value.ToCharArray())
-            {
-                byteArray[indexBA++] = (byte)item;
-            }
-            //Prepare for compress
-            System.IO.MemoryStream ms = new System.IO.MemoryStream();
-            System.IO.Compression.GZipStream sw = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionMode.Compress);
-            //Compress
-            sw.Write(byteArray, 0, byteArray.Length);
-            //Close, DO NOT FLUSH cause bytes will go missing...
-            sw.Close();
-            //Transform byte[] zip data to string
-            byteArray = ms.ToArray();
-            System.Text.StringBuilder sB = new System.Text.StringBuilder(byteArray.Length);
-            foreach (byte item in byteArray)
-            {
-                sB.Append((char)item);
-            }
-            ms.Close();
-            sw.Dispose();
-            ms.Dispose();
-            return sB.ToString();
+            return Compression.ZipFileCompress(sourceDirName);
         }
-        public static string UnZip(string value)
+        public static string ZipExtract(string sourceFileName)
         {
-            //Transform string into byte[]
-            byte[] byteArray = new byte[value.Length];
-            int indexBA = 0;
-            foreach (char item in value.ToCharArray())
+            string ext = Path.GetExtension(sourceFileName).ToLower();
+            switch (ext)
             {
-                byteArray[indexBA++] = (byte)item;
+                case ".zip": return Compression.ZipFileExtract(sourceFileName);
+                case ".tar": return Compression.TarFileExtract(sourceFileName);
+                case ".gz": return Compression.TarGzFileExtract(sourceFileName);
+                default: return Compression.ZipFileExtract(sourceFileName);
             }
-            //Prepare for decompress
-            System.IO.MemoryStream ms = new System.IO.MemoryStream(byteArray);
-            System.IO.Compression.GZipStream sr = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionMode.Decompress);
-            //Reset variable to collect uncompressed result
-            byteArray = new byte[byteArray.Length];
-            //Decompress
-            int rByte = sr.Read(byteArray, 0, byteArray.Length);
-            //Transform byte[] unzip data to string
-            System.Text.StringBuilder sB = new System.Text.StringBuilder(rByte);
-            //Read the number of bytes GZipStream red and do not a for each bytes in
-            //resultByteArray;
-            for (int i = 0; i < rByte; i++)
-            {
-                sB.Append((char)byteArray[i]);
-            }
-            sr.Close();
-            ms.Close();
-            sr.Dispose();
-            ms.Dispose();
-            return sB.ToString();
         }
-
-
-        /// <summary>
-        /// 指示指定主机或 Ip 是否是本机。
-        /// </summary>
-        /// <param name="host"></param>
-        /// <returns></returns>
         public static bool IsLocalIpOrHost(string host)
         {
             if (string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase))
@@ -253,22 +224,16 @@ namespace System
             return _ips.Any(c => c == host);
         }
 
-        /// <summary>
-        /// 拷贝目录及目录下的文件到新目录。
-        /// </summary>
-        /// <param name="source">需要拷贝的目录。</param>
-        /// <param name="dest">拷贝到的目录。</param>
-        /// <param name="skipFiles">跳过拷贝的文件名称。</param>
-        public static void CopyFolder(string source, string dest, params string[] skipFiles)
+        public static void CopyFolder(string sourceDirName, string destDirName, params string[] skipFiles)
         {
-            CopyFolder(new DirectoryInfo(source), dest, skipFiles);
+            CopyFolder(new DirectoryInfo(sourceDirName), destDirName, skipFiles);
         }
-        static void CopyFolder(DirectoryInfo source, string dest, params string[] skipFiles)
+        static void CopyFolder(DirectoryInfo source, string destDirName, params string[] skipFiles)
         {
             if (!source.Exists || source.Attributes.HasFlag(FileAttributes.Hidden))
                 return;
 
-            Directory.CreateDirectory(dest);
+            Directory.CreateDirectory(destDirName);
             var fileInfos = source.GetFiles();
             foreach (var info in fileInfos)
             {
@@ -277,14 +242,12 @@ namespace System
                 if (skipFiles.Any(c => string.Equals(c, info.Name, StringComparison.OrdinalIgnoreCase)))
                     continue;
                 if (info.Exists)
-                    info.CopyTo(Path.Combine(dest, info.Name), true);
+                    info.CopyTo(Path.Combine(destDirName, info.Name), true);
             }
 
             var dirInfos = source.GetDirectories();
             foreach (var info in dirInfos)
-            {
-                CopyFolder(info, Path.Combine(dest, info.Name));
-            }
+                CopyFolder(info, Path.Combine(destDirName, info.Name));
         }
 
         /// <summary>
@@ -316,6 +279,7 @@ namespace System
                     default:
                         throw new System.InvalidOperationException("Unknown OS Platform!");
                 }
+
                 process.Start();
                 process.StandardInput.WriteLine(command);
                 process.StandardInput.WriteLine("exit");
@@ -324,13 +288,6 @@ namespace System
                 return process.StandardOutput.ReadToEnd();
             }
         }
-
-        /// <summary>
-        /// 执行脚本或批处理。
-        /// </summary>
-        /// <param name="name">脚本、批处理名称或路径。</param>
-        /// <param name="args"></param>
-        /// <returns></returns>
         public static string ExecuteShell(string name, string args)
         {
             using (var process = new Diagnostics.Process())

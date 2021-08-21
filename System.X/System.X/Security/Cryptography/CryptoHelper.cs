@@ -133,6 +133,13 @@
                 return ToBitString(GetHashBytes(value, provider));
             }
         }
+        public string MD5(byte[] bytes)
+        {
+            using (var provider = new global::System.Security.Cryptography.MD5CryptoServiceProvider())
+            {
+                return ToBitString(provider.ComputeHash(bytes));
+            }
+        }
         public string MD5(global::System.IO.Stream inputStream)
         {
             using (var provider = new global::System.Security.Cryptography.MD5CryptoServiceProvider())
@@ -145,6 +152,13 @@
             using (var provider = new global::System.Security.Cryptography.SHA1CryptoServiceProvider())
             {
                 return ToBitString(GetHashBytes(value, provider));
+            }
+        }
+        public string SHA1(byte[] bytes)
+        {
+            using (var provider = new global::System.Security.Cryptography.SHA1CryptoServiceProvider())
+            {
+                return ToBitString(provider.ComputeHash(bytes));
             }
         }
         public string SHA1(global::System.IO.Stream inputStream)

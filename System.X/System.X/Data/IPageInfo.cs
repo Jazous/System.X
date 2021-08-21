@@ -16,6 +16,6 @@
         /// <summary>
         /// 数据记录的总个数。
         /// </summary>
-        int RecordCount { get; set; }
+        int TotalCount { get; set; }
     }
 }

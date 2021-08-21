@@ -1,6 +1,6 @@
 ﻿namespace System.Linq
 {
-    public static class FnLinqExtension
+    public static class XLinqExtension
     {
         /// <summary>
         /// 根据属性按升序对序列的元素排序。
@@ -67,16 +67,16 @@
             return source.Where(Expressions.Expression.Lambda<Func<TSource, bool>>(body, keySelector.Parameters));
         }
 
-        public static Collections.Generic.PagedList<T> ToPageList<T>(this IOrderedEnumerable<T> source, int pageIndex, int pageSize)
+        public static Collections.Generic.PagedList<T> ToPagedList<T>(this IOrderedEnumerable<T> source, int pageIndex, int pageSize)
         {
             var result = new System.Collections.Generic.PagedList<T>(source.Skip(pageIndex).Take(pageSize));
-            result.RecordCount = source.Count();
+            result.TotalCount = source.Count();
             return result;
         }
         public static Collections.Generic.PagedList<T> ToPagedList<T>(this IOrderedQueryable<T> source, int pageIndex, int pageSize)
         {
             var result = new System.Collections.Generic.PagedList<T>(source.Skip(pageIndex).Take(pageSize));
-            result.RecordCount = source.Count();
+            result.TotalCount = source.Count();
             return result;
         }
 
