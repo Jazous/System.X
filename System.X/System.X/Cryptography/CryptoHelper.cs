@@ -5,218 +5,126 @@
         private CryptoHelper() { }
         internal static readonly CryptoHelper Instance = new CryptoHelper();
 
-        public readonly byte[] rgbIV = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
-        public readonly byte[] aesIV = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
+        readonly byte[] rgbIV = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
+        readonly byte[] aesIV = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
 
-        byte[] GetHashBytes(string value, global::System.Security.Cryptography.HashAlgorithm hashAlgorithm)
-        {
-            char[] chars = value.ToCharArray();
-            byte[] buffer = global::System.Text.Encoding.UTF8.GetBytes(chars, 0, chars.Length);
-            return hashAlgorithm.ComputeHash(buffer, 0, buffer.Length);
-        }
         byte[] GetTransformBytes(byte[] buffer, global::System.Security.Cryptography.ICryptoTransform transform)
         {
             using (var ms = new global::System.IO.MemoryStream())
+            using (var cs = new global::System.Security.Cryptography.CryptoStream(ms, transform, global::System.Security.Cryptography.CryptoStreamMode.Write))
             {
-                using (var cs = new global::System.Security.Cryptography.CryptoStream(ms, transform, global::System.Security.Cryptography.CryptoStreamMode.Write))
-                {
-                    cs.Write(buffer, 0, buffer.Length);
-                    cs.FlushFinalBlock();
-                    return ms.ToArray();
-                }
+                cs.Write(buffer, 0, buffer.Length);
+                cs.FlushFinalBlock();
+                return ms.ToArray();
             }
+        }
+        byte[] Encrypt(byte[] value, byte[] rgbKey, byte[] rgbIV, Security.Cryptography.SymmetricAlgorithm provider)
+        {
+            using (provider)
+                return GetTransformBytes(value, provider.CreateEncryptor(rgbKey, rgbIV));
+        }
+        byte[] Decrypt(byte[] value, byte[] rgbKey, byte[] rgbIV, Security.Cryptography.SymmetricAlgorithm provider)
+        {
+            using (provider)
+                return GetTransformBytes(value, provider.CreateDecryptor(rgbKey, rgbIV));
         }
 
         //对称加解密 DES、IDEA、RC2、RC4、SKIPJACK、RC5、AES
-        public byte[] EncryptDES(byte[] value, byte[] rgbKey, byte[] rgbIV)
+        public byte[] DES(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
-            using (var provider = new global::System.Security.Cryptography.DESCryptoServiceProvider())
-            {
-                return GetTransformBytes(value, provider.CreateEncryptor(rgbKey, rgbIV));
-            }
+            return Encrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.DESCryptoServiceProvider());
         }
-        public string EncryptDES(string value, byte[] rgbKey, byte[] rgbIV)
+        public string DES(string value, byte[] rgbKey, byte[] rgbIV)
         {
-            byte[] buffer = global::System.Text.Encoding.UTF8.GetBytes(value);
-            return global::System.Convert.ToBase64String(EncryptDES(buffer, rgbKey, rgbIV));
+            return global::System.Convert.ToBase64String(DES(global::System.Text.Encoding.UTF8.GetBytes(value), rgbKey, rgbIV));
         }
-        public byte[] DecryptDES(byte[] value, byte[] rgbKey, byte[] rgbIV)
+        public byte[] DESDecrypt(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
-            using (var provider = new global::System.Security.Cryptography.DESCryptoServiceProvider())
-            {
-                return GetTransformBytes(value, provider.CreateDecryptor(rgbKey, rgbIV));
-            }
+            return Decrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.DESCryptoServiceProvider());
         }
-        public string DecryptDES(string value, byte[] rgbKey, byte[] rgbIV)
+        public string DESDecrypt(string value, byte[] rgbKey, byte[] rgbIV)
         {
             byte[] buffer = global::System.Convert.FromBase64String(value);
-            return global::System.Text.Encoding.UTF8.GetString(DecryptDES(buffer, rgbKey, rgbIV));
+            return global::System.Text.Encoding.UTF8.GetString(DESDecrypt(buffer, rgbKey, rgbIV));
         }
 
-        public byte[] EncryptDES3(byte[] value, byte[] rgbKey, byte[] rgbIV)
+        public byte[] TripleDES(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
-            using (var provider = new global::System.Security.Cryptography.TripleDESCryptoServiceProvider())
-            {
-                return GetTransformBytes(value, provider.CreateEncryptor(rgbKey, rgbIV));
-            }
+            return Encrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.TripleDESCryptoServiceProvider());
         }
-        public string EncryptDES3(string value, byte[] rgbKey, byte[] rgbIV)
+        public string TripleDES(string value, byte[] rgbKey, byte[] rgbIV)
         {
-            byte[] buffer = global::System.Text.Encoding.UTF8.GetBytes(value);
-            return global::System.Convert.ToBase64String(EncryptDES3(buffer, rgbKey, rgbIV));
+            return global::System.Convert.ToBase64String(TripleDES(global::System.Text.Encoding.UTF8.GetBytes(value), rgbKey, rgbIV));
         }
-        public byte[] DecryptDES3(byte[] value, byte[] rgbKey, byte[] rgbIV)
+        public byte[] TripleDESDecrypt(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
-            using (var provider = new global::System.Security.Cryptography.TripleDESCryptoServiceProvider())
-            {
-                return GetTransformBytes(value, provider.CreateDecryptor(rgbKey, rgbIV));
-            }
+            return Decrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.TripleDESCryptoServiceProvider());
         }
-        public string DecryptDES3(string value, byte[] rgbKey, byte[] rgbIV)
+        public string TripleDESDecrypt(string value, byte[] rgbKey, byte[] rgbIV)
         {
             byte[] buffer = global::System.Convert.FromBase64String(value);
-            return global::System.Text.Encoding.UTF8.GetString(DecryptDES3(buffer, rgbKey, rgbIV));
+            return global::System.Text.Encoding.UTF8.GetString(TripleDESDecrypt(buffer, rgbKey, rgbIV));
         }
 
-        public byte[] EncryptAES(byte[] value, byte[] rgbKey, byte[] rgbIV)
+        public byte[] Aes(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
-            using (var provider = new global::System.Security.Cryptography.AesCryptoServiceProvider())
-            {
-                return GetTransformBytes(value, provider.CreateEncryptor(rgbKey, rgbIV));
-            }
+            return Encrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.AesCryptoServiceProvider());
         }
-        public string EncryptAES(string value, byte[] rgbKey, byte[] rgbIV)
+        public string Aes(string value, byte[] rgbKey, byte[] rgbIV)
         {
-            byte[] buffer = global::System.Text.Encoding.UTF8.GetBytes(value);
-            return global::System.Convert.ToBase64String(EncryptAES(buffer, rgbKey, rgbIV));
+            return global::System.Convert.ToBase64String(Aes(global::System.Text.Encoding.UTF8.GetBytes(value), rgbKey, rgbIV));
         }
-        public byte[] DecryptAES(byte[] value, byte[] rgbKey, byte[] rgbIV)
+        public byte[] AesDecrypt(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
-            using (var provider = new global::System.Security.Cryptography.AesCryptoServiceProvider())
-            {
-                return GetTransformBytes(value, provider.CreateDecryptor(rgbKey, rgbIV));
-            }
+            return Decrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.AesCryptoServiceProvider());
         }
-        public string DecryptAES(string value, byte[] rgbKey, byte[] rgbIV)
+        public string AesDecrypt(string value, byte[] rgbKey, byte[] rgbIV)
         {
             byte[] buffer = global::System.Convert.FromBase64String(value);
-            return global::System.Text.Encoding.UTF8.GetString(DecryptAES(buffer, rgbKey, rgbIV));
+            return global::System.Text.Encoding.UTF8.GetString(AesDecrypt(buffer, rgbKey, rgbIV));
         }
 
-        public byte[] EncryptRC2(byte[] value, byte[] rgbKey, byte[] rgbIV)
+        public byte[] RC2(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
-            using (var provider = new global::System.Security.Cryptography.RC2CryptoServiceProvider())
-            {
-                return GetTransformBytes(value, provider.CreateEncryptor(rgbKey, rgbIV));
-            }
+            return Encrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.RC2CryptoServiceProvider());
         }
-        public string EncryptRC2(string value, byte[] rgbKey, byte[] rgbIV)
+        public string RC2(string value, byte[] rgbKey, byte[] rgbIV)
         {
-            byte[] buffer = global::System.Text.Encoding.UTF8.GetBytes(value);
-            return global::System.Convert.ToBase64String(EncryptRC2(buffer, rgbKey, rgbIV));
+            return global::System.Convert.ToBase64String(RC2(global::System.Text.Encoding.UTF8.GetBytes(value), rgbKey, rgbIV));
         }
-        public byte[] DecryptRC2(byte[] value, byte[] rgbKey, byte[] rgbIV)
+        public byte[] RC2Decrypt(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
-            using (var provider = new global::System.Security.Cryptography.RC2CryptoServiceProvider())
-            {
-                return GetTransformBytes(value, provider.CreateDecryptor(rgbKey, rgbIV));
-            }
+            return Decrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.RC2CryptoServiceProvider());
         }
-        public string DecryptRC2(string value, byte[] rgbKey, byte[] rgbIV)
+        public string RC2Decrypt(string value, byte[] rgbKey, byte[] rgbIV)
         {
             byte[] buffer = global::System.Convert.FromBase64String(value);
-            return global::System.Text.Encoding.UTF8.GetString(DecryptRC2(buffer, rgbKey, rgbIV));
+            return global::System.Text.Encoding.UTF8.GetString(RC2Decrypt(buffer, rgbKey, rgbIV));
         }
 
-        public string MD5(string value)
+
+        public string Hash(Enums.HashAlgorithms hash, byte[] bytes)
         {
-            using (var provider = new global::System.Security.Cryptography.MD5CryptoServiceProvider())
-            {
-                return ToBitString(GetHashBytes(value, provider));
-            }
-        }
-        public string MD5(byte[] bytes)
-        {
-            using (var provider = new global::System.Security.Cryptography.MD5CryptoServiceProvider())
-            {
+            using (var provider = Security.Cryptography.HashAlgorithm.Create(hash.ToString()))
                 return ToBitString(provider.ComputeHash(bytes));
+        }
+        public string Hash(Enums.HashAlgorithms hash, string value)
+        {
+            using (var provider = Security.Cryptography.HashAlgorithm.Create(hash.ToString()))
+            {
+                char[] chars = value.ToCharArray();
+                byte[] buffer = global::System.Text.Encoding.UTF8.GetBytes(chars, 0, chars.Length);
+                return ToBitString(provider.ComputeHash(buffer, 0, buffer.Length));
             }
         }
-        public string MD5(global::System.IO.Stream inputStream)
+        public string Hash(Enums.HashAlgorithms hash, global::System.IO.Stream inputStream)
         {
-            using (var provider = new global::System.Security.Cryptography.MD5CryptoServiceProvider())
-            {
+            using (var provider = Security.Cryptography.HashAlgorithm.Create(hash.ToString()))
                 return ToBitString(provider.ComputeHash(inputStream));
-            }
         }
-        public string SHA1(string value)
-        {
-            using (var provider = new global::System.Security.Cryptography.SHA1CryptoServiceProvider())
-            {
-                return ToBitString(GetHashBytes(value, provider));
-            }
-        }
-        public string SHA1(byte[] bytes)
-        {
-            using (var provider = new global::System.Security.Cryptography.SHA1CryptoServiceProvider())
-            {
-                return ToBitString(provider.ComputeHash(bytes));
-            }
-        }
-        public string SHA1(global::System.IO.Stream inputStream)
-        {
-            using (var provider = new global::System.Security.Cryptography.SHA1CryptoServiceProvider())
-            {
-                return ToBitString(provider.ComputeHash(inputStream));
-            }
-        }
-        public string SHA256(string value)
-        {
-            using (var provider = new global::System.Security.Cryptography.SHA256CryptoServiceProvider())
-            {
-                return ToBitString(GetHashBytes(value, provider));
-            }
-        }
-        public string SHA256(global::System.IO.Stream inputStream)
-        {
-            using (var provider = new global::System.Security.Cryptography.SHA256CryptoServiceProvider())
-            {
-                return ToBitString(provider.ComputeHash(inputStream));
-            }
-        }
-        public string SHA384(string value)
-        {
-            using (var provider = new global::System.Security.Cryptography.SHA384CryptoServiceProvider())
-            {
-                return ToBitString(GetHashBytes(value, provider));
-            }
-        }
-        public string SHA384(global::System.IO.Stream inputStream)
-        {
-            using (var provider = new global::System.Security.Cryptography.SHA384CryptoServiceProvider())
-            {
-                return ToBitString(provider.ComputeHash(inputStream));
-            }
-        }
-        public string SHA512(string value)
-        {
-            using (var provider = new global::System.Security.Cryptography.SHA512CryptoServiceProvider())
-            {
-                return ToBitString(GetHashBytes(value, provider));
-            }
-        }
-        public string SHA512(global::System.IO.Stream inputStream)
-        {
-            using (var provider = new global::System.Security.Cryptography.SHA512CryptoServiceProvider())
-            {
-                return ToBitString(provider.ComputeHash(inputStream));
-            }
-        }
-
-
 
         //非对称加解密
-        public string EncryptRSA(string value, string publicKey)
+        public string RSA(string value, string publicKey)
         {
             using (var provider = new global::System.Security.Cryptography.RSACryptoServiceProvider())
             {
@@ -224,7 +132,7 @@
                 return Convert.ToBase64String(provider.Encrypt(global::System.Text.Encoding.UTF8.GetBytes(value), false));
             }
         }
-        public string DecryptRSA(string value, string privateKey)
+        public string RSADecrypt(string value, string privateKey)
         {
             using (var provider = new global::System.Security.Cryptography.RSACryptoServiceProvider())
             {
@@ -233,7 +141,7 @@
             }
         }
 
-        public string SignRSA(string value, string privateKey, global::System.Security.Cryptography.HashAlgorithm hashAlgorithm)
+        public string RSASign(string value, string privateKey, global::System.Security.Cryptography.HashAlgorithm hashAlgorithm)
         {
             using (var provider = new global::System.Security.Cryptography.RSACryptoServiceProvider())
             {
@@ -241,7 +149,7 @@
                 return Convert.ToBase64String(provider.SignData(global::System.Text.Encoding.UTF8.GetBytes(value), hashAlgorithm));
             }
         }
-        public bool VerifySignRSA(string value, string sign, string publicKey, global::System.Security.Cryptography.HashAlgorithm hashAlgorithm)
+        public bool RSAVerifySign(string value, string sign, string publicKey, global::System.Security.Cryptography.HashAlgorithm hashAlgorithm)
         {
             using (var provider = new global::System.Security.Cryptography.RSACryptoServiceProvider())
             {
@@ -251,7 +159,7 @@
         }
 
         //一般用于数字签名和认证
-        public string SignDSA(string value, string privateKey)
+        public string DSASign(string value, string privateKey)
         {
             using (var provider = new global::System.Security.Cryptography.DSACryptoServiceProvider())
             {
@@ -259,7 +167,7 @@
                 return global::System.Text.Encoding.UTF8.GetString(provider.CreateSignature(Convert.FromBase64String(value)));
             }
         }
-        public bool VerifySignDSA(string value, string sign, string publicKey)
+        public bool DSAVerifySign(string value, string sign, string publicKey)
         {
             using (var provider = new global::System.Security.Cryptography.DSACryptoServiceProvider())
             {

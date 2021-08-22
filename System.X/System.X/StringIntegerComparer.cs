@@ -33,6 +33,7 @@
             int len = value.Length > 9 ? 9 : value.Length;
             char ch;
             int i = 0;
+            bool flag = false;
             for (; i < len; i++)
             {
                 ch = value[i];
@@ -48,27 +49,13 @@
                     case '7':
                     case '8':
                     case '9':
+                        flag = true;
                         continue;
                     default:
                         return i - 1;
                 }
             }
-            switch (value[0])
-            {
-                case '0':
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                case '8':
-                case '9':
-                    return len - 1;
-                default:
-                    return -1;
-            }
+            return flag ? len - 1 : -1;
         }
     }
 }

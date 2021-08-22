@@ -16,5 +16,23 @@
         /// </summary>
         [global::System.Runtime.Serialization.DataMember]
         public string Value { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+            if (!(obj is NameValue))
+                return false;
+            var other = (NameValue)obj;
+            return other.Name == this.Name && other.Value == this.Value;
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+        public override string ToString()
+        {
+            return $"{{Name:{ Name},Value:{ Value}}}";
+        }
     }
 }

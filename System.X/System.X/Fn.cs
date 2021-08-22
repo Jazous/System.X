@@ -1,9 +1,8 @@
-﻿using System.Net;
+﻿using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
-using System.IO;
+using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace System
 {
@@ -11,13 +10,20 @@ namespace System
     {
         public static Text.Encoding UTF8 { get => System.Text.Encoding.UTF8; }
         public const string Alphabet = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
+        static readonly string[] _dateFormats = new string[] { "yyyy/MM/dd HH:mm", "yyyy-MM-dd HH:mm", "yyyy/MM/dd HH", "yyyy-MM-dd HH" };
+        static string _tempDir = Path.GetTempPath();
+        /// <summary>
+        /// The path of the current user's temporary folder ending with a backslash.
+        /// </summary>
+        public static string TempDir { get => _tempDir; }
 
         /// <summary>
-        /// 当前运行的操作系统平台。
+        /// Operating system that current application is running at.
         /// </summary>
         public static X.Enums.OSPlatforms OSPlatform { get; }
 
-        public static System.X.IO.ProfileHelper Profile { get => System.X.IO.ProfileHelper.Instance; }
+        public static System.X.IO.FileHelper File { get => System.X.IO.FileHelper.Instance; }
+        //public static System.X.IO.ProfileHelper Profile { get => System.X.IO.ProfileHelper.Instance; }
         public static System.X.Text.HtmlHelper Html { get => System.X.Text.HtmlHelper.Instance; }
         public static System.X.Text.TextHelper Text { get => System.X.Text.TextHelper.Instance; }
         public static System.X.Cryptography.CryptoHelper Crypto { get => System.X.Cryptography.CryptoHelper.Instance; }
@@ -35,6 +41,7 @@ namespace System
             else
                 OSPlatform = X.Enums.OSPlatforms.Unknown;
         }
+        private Fn() { }
 
         public static bool ToBoolean(string value)
         {
@@ -66,12 +73,14 @@ namespace System
         {
             if (string.IsNullOrWhiteSpace(value))
                 return null;
-            DateTime result;
 
+            DateTime result;
             if (DateTime.TryParse(value, out result))
                 return result;
-            if (DateTime.TryParseExact(value, new string[] { "yyyy/MM/dd HH:mm", "yyyy-MM-dd HH:mm", "yyyy/MM/dd HH", "yyyy-MM-dd HH" }, Globalization.DateTimeFormatInfo.CurrentInfo, Globalization.DateTimeStyles.None, out result))
+
+            if (DateTime.TryParseExact(value, _dateFormats, Globalization.DateTimeFormatInfo.CurrentInfo, Globalization.DateTimeStyles.None, out result))
                 return result;
+
             return null;
         }
         public static DateTime? ToDate(string value)
@@ -111,64 +120,31 @@ namespace System
         }
         public static string NewTempDir()
         {
-            string tempDir = string.Concat(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+            string tempDir = Path.Combine(TempDir, Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(tempDir);
             return tempDir;
         }
         public static async Task<string> NewTempFile(byte[] bytes)
         {
-            string tempFile = Path.GetTempFileName();
-            using (var fileStream = File.Open(tempFile, FileMode.OpenOrCreate, FileAccess.Write))
-            {
-                await fileStream.WriteAsync(bytes, 0, bytes.Length);
-                fileStream.Flush();
-            }
-            return tempFile;
+            return await Fn.File.Create(bytes);
         }
-        public static async Task<string> NewTempFile(Stream stream, bool leaveOpen = false)
+        public static async Task<string> NewTempFile(Stream stream)
         {
-            string tempFile = Path.GetTempFileName();
-            using (var fileStream = File.Open(tempFile, FileMode.OpenOrCreate, FileAccess.Write))
-            {
-                await stream.CopyToAsync(fileStream);
-                fileStream.Flush();
-            }
-            if (!leaveOpen)
-                stream.Close();
-            return tempFile;
+            return await Fn.File.Create(stream, false);
         }
 
-        public static string MD5(string value)
+        public static string Zip(string srcDirName)
         {
-            return Fn.Crypto.MD5(value);
+            return Compress.Zip(srcDirName);
         }
-        public static string MD5(byte[] bytes)
+        /// <summary>
+        /// Extracts all of the files in the specified zip archive to temporary directory on the file system
+        /// </summary>
+        /// <param name="srcFileName">The path on the file system to the archive that is to be extracted.</param>
+        /// <returns>The path to the destination directory on the file system.</returns>
+        public static string ZipExtract(string srcFileName)
         {
-            return Fn.Crypto.MD5(bytes);
-        }
-        public static string SHA1(string value)
-        {
-            return Fn.Crypto.SHA1(value);
-        }
-        public static string SHA1(byte[] bytes)
-        {
-            return Fn.Crypto.SHA1(bytes);
-        }
-
-        public static string Zip(string sourceDirName)
-        {
-            return Compression.Zip(sourceDirName);
-        }
-        public static string ZipExtract(string sourceFileName)
-        {
-            string ext = Path.GetExtension(sourceFileName).ToLower();
-            switch (ext)
-            {
-                case ".zip": return Compression.ZipExtract(sourceFileName);
-                case ".tar": return Compression.TarExtract(sourceFileName);
-                case ".gz": return Compression.TargzExtract(sourceFileName);
-                default: return Compression.ZipExtract(sourceFileName);
-            }
+            return Compress.ZipExtract(srcFileName, true);
         }
         public static bool IsLocalIpOrHost(string host)
         {
@@ -184,38 +160,12 @@ namespace System
             return ips.Any(c => c == host);
         }
 
-        public static void CopyFolder(string sourceDirName, string destDirName, params string[] skipFiles)
-        {
-            CopyFolder(new DirectoryInfo(sourceDirName), destDirName, skipFiles);
-        }
-        static void CopyFolder(DirectoryInfo source, string destDirName, params string[] skipFiles)
-        {
-            if (!source.Exists || source.Attributes.HasFlag(FileAttributes.Hidden))
-                return;
-
-            Directory.CreateDirectory(destDirName);
-            var fileInfos = source.GetFiles();
-            foreach (var info in fileInfos)
-            {
-                if (info.Attributes.HasFlag(FileAttributes.Hidden))
-                    continue;
-                if (skipFiles.Any(c => string.Equals(c, info.Name, StringComparison.OrdinalIgnoreCase)))
-                    continue;
-                if (info.Exists)
-                    info.CopyTo(Path.Combine(destDirName, info.Name), true);
-            }
-
-            var dirInfos = source.GetDirectories();
-            foreach (var info in dirInfos)
-                CopyFolder(info, Path.Combine(destDirName, info.Name));
-        }
-
         /// <summary>
-        /// 执行命令并退出，支持：cmd、/bin/bash
+        /// Execute command with cmd.exe or /bin/bash then exit.
         /// </summary>
-        /// <param name="command">命令。</param>
+        /// <param name="command"></param>
         /// <returns></returns>
-        public static string ExecuteCmd(string command)
+        public static string ExeCmd(string command)
         {
             using (var process = new Diagnostics.Process())
             {
@@ -228,7 +178,7 @@ namespace System
                 switch (OSPlatform)
                 {
                     case X.Enums.OSPlatforms.Windows:
-                        process.StartInfo.FileName = IO.Path.Combine(System.Environment.GetEnvironmentVariable("windir"), @"system32\cmd.exe");
+                        process.StartInfo.FileName = System.IO.Path.Combine(System.Environment.GetEnvironmentVariable("windir"), @"system32\cmd.exe");
                         break;
                     case X.Enums.OSPlatforms.Linux:
                         process.StartInfo.FileName = "/bin/bash";
@@ -248,7 +198,7 @@ namespace System
                 return process.StandardOutput.ReadToEnd();
             }
         }
-        public static string ExecuteShell(string name, string args)
+        public static string ExeShell(string name, string args)
         {
             using (var process = new Diagnostics.Process())
             {
@@ -263,6 +213,11 @@ namespace System
                 process.WaitForExit();
                 return process.StandardOutput.ReadToEnd();
             }
+        }
+
+        public static string Eval(string expression)
+        {
+            throw new NotImplementedException();
         }
     }
 }

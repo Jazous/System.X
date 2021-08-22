@@ -1,28 +1,25 @@
-﻿using System.Runtime.InteropServices;
-
-namespace System.Data
+﻿namespace System.Data
 {
-    /// <summary>
-    /// 提供列表数据分页信息的类。
-    /// </summary>
     [global::System.Runtime.Serialization.DataContract, global::System.Serializable]
-    public struct PageInfo
+    public sealed class QueryFilter
     {
-        /// <summary>
-        /// 分页数据的页索引值。
-        /// </summary>
+        public QueryFilter()
+        {
+            this.Items = new Collections.Generic.List<QueryItem>();
+            this.PageIndex = 0;
+            this.PageSize = 50;
+        }
+
+        [global::System.Runtime.Serialization.DataMember]
+        public Collections.Generic.List<QueryItem> Items { get; set; }
         [global::System.Runtime.Serialization.DataMember]
         public int PageIndex { get; set; }
-        /// <summary>
-        /// 分页数据的页面大小。
-        /// </summary>
         [global::System.Runtime.Serialization.DataMember]
         public int PageSize { get; set; }
-        /// <summary>
-        /// 数据记录的总个数。
-        /// </summary>
         [global::System.Runtime.Serialization.DataMember]
-        public int TotalCount { get; set; }
+        public string SortProperty { get; set; }
+        [global::System.Runtime.Serialization.DataMember]
+        public bool Ascending { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -34,7 +31,7 @@ namespace System.Data
         }
         public override string ToString()
         {
-            return $"{{PageIndex:{ PageIndex},PageSize:{ PageSize},TotalCount:{ TotalCount}}}";
+            return base.ToString();
         }
     }
 }

@@ -4,7 +4,7 @@ using System.IO;
 
 namespace System.X.IO
 {
-    public sealed class ProfileHelper
+    sealed class ProfileHelper
     {
         internal static readonly ProfileHelper Instance=new ProfileHelper();
         private ProfileHelper() { }

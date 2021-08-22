@@ -67,17 +67,15 @@
             return source.Where(Expressions.Expression.Lambda<Func<TSource, bool>>(body, keySelector.Parameters));
         }
 
-        public static Collections.Generic.PagedList<T> ToPagedList<T>(this IOrderedEnumerable<T> source, int pageIndex, int pageSize)
+        public static (Collections.Generic.List<T>, System.Data.PageInfo) ToPagedList<T>(this IOrderedEnumerable<T> source, int pageIndex, int pageSize)
         {
-            var result = new System.Collections.Generic.PagedList<T>(source.Skip(pageIndex).Take(pageSize));
-            result.TotalCount = source.Count();
-            return result;
+            var result = new System.Collections.Generic.List<T>(source.Skip(pageIndex).Take(pageSize));
+            return (result, new Data.PageInfo() { PageIndex = pageIndex, PageSize = pageSize, TotalCount = source.Count() });
         }
-        public static Collections.Generic.PagedList<T> ToPagedList<T>(this IOrderedQueryable<T> source, int pageIndex, int pageSize)
+        public static (Collections.Generic.List<T>, System.Data.PageInfo) ToPagedList<T>(this IOrderedQueryable<T> source, int pageIndex, int pageSize)
         {
-            var result = new System.Collections.Generic.PagedList<T>(source.Skip(pageIndex).Take(pageSize));
-            result.TotalCount = source.Count();
-            return result;
+            var result = new System.Collections.Generic.List<T>(source.Skip(pageIndex).Take(pageSize));
+            return (result, new Data.PageInfo() { PageIndex = pageIndex, PageSize = pageSize, TotalCount = source.Count() });
         }
 
         internal static Expressions.LambdaExpression GetKeySelector<T>(string propertyName)

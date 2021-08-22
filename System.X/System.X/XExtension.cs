@@ -6,9 +6,9 @@
         {
             return string.IsNullOrEmpty(source);
         }
-        public static bool EqualsIgnoreCase(this string source, string value)
+        public static bool Equals(this string source, string value, bool ignoreCase)
         {
-            return string.Equals(source, value, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(source, value, ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
         public static int? ToInt32(this string source)
         {
