@@ -5,5 +5,7 @@
 /System.X/System.X/bin/Debug/netcoreapp3.1
 *.suo
 /System.X/System.X/obj
+/System.X/System.X/bin
 /System.X/System.X.Tests/bin/Debug/netcoreapp3.1
 /System.X/System.X.Tests/obj
+/System.X/System.X.Tests/bin
