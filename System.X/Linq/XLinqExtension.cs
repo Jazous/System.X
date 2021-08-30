@@ -25,7 +25,7 @@ namespace System.Linq
             dynamic keySelector = GetKeySelector<T>(propertyName);
             return Queryable.ThenByDescending(source, keySelector);
         }
-        public static IQueryable<TSource> ElementsIn<TSource, TKey>(this IQueryable<TSource> source, Expression<Func<TSource, TKey>> keySelector, TKey[] values)
+        public static IQueryable<TSource> ElementsIn<TSource, TKey>(this IQueryable<TSource> source, Expression<Func<TSource, TKey>> keySelector, IEnumerable<TKey> values)
         {
             var equals = values.Select(value => (Expression)Expression.Equal(keySelector.Body, Expression.Constant(value, typeof(TKey))));
             var body = equals.Aggregate<Expression>((accumulate, equal) => Expression.Or(accumulate, equal));
