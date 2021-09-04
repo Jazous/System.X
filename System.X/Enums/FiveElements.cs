@@ -5,7 +5,7 @@ namespace System.X.Enums
     public enum FiveElements
     {
         [Description("金")]
-        Gold = 0,
+        Gold = 1,
         [Description("木")]
         Wood,
         [Description("水")]

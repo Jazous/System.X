@@ -26,6 +26,7 @@ namespace System
         public static System.X.IO.FileHelper File { get => System.X.IO.FileHelper.Instance; }
         //public static System.X.IO.ProfileHelper Profile { get => System.X.IO.ProfileHelper.Instance; }
         public static System.X.Text.HtmlHelper Html { get => System.X.Text.HtmlHelper.Instance; }
+        public static System.X.Drawing.ImageHelper Image { get => System.X.Drawing.ImageHelper.Instance; }
         public static System.X.Text.TextHelper Text { get => System.X.Text.TextHelper.Instance; }
         public static System.X.Cryptography.CryptoHelper Crypto { get => System.X.Cryptography.CryptoHelper.Instance; }
         public static System.X.Net.HttpHelper Http { get => X.Net.HttpHelper.Instance; }
@@ -94,6 +95,14 @@ namespace System
             T result;
             if (Enum.TryParse(value, true, out result))
                 return result;
+
+            var values = Enum.GetValues(typeof(T));
+            foreach (var item in values)
+            {
+                var desc = (System.ComponentModel.DescriptionAttribute)item.GetType().GetField(item.ToString()).GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false).FirstOrDefault();
+                if (desc != null && string.Equals(desc.Description, value, StringComparison.OrdinalIgnoreCase))
+                    return (T)item;
+            }
             return null;
         }
         public static List<KeyValuePair<int, string>> ToList<T>(bool descFirst) where T : Enum
@@ -115,7 +124,7 @@ namespace System
 
             return result;
         }
-        public static string GetDesc<T>(T value) where T : Enum
+        public static string GetDescription<T>(T value) where T : Enum
         {
             string text = value.ToString();
             var desc = (System.ComponentModel.DescriptionAttribute)value.GetType().GetField(text).GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false).FirstOrDefault();
@@ -157,18 +166,18 @@ namespace System
         {
             return Compress.ZipExtract(srcFileName, true);
         }
-        public static bool IsLocalIpOrHost(string hostNameOrIp)
+        public static bool IsLocalIpOrHost(string hostNameOrIpAddress)
         {
-            if (string.Equals(hostNameOrIp, "localhost", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(hostNameOrIpAddress, "localhost", StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (string.Equals(hostNameOrIp, "127.0.0.1"))
+            if (string.Equals(hostNameOrIpAddress, "127.0.0.1"))
                 return true;
-            if (string.Equals(hostNameOrIp, "::1"))
+            if (string.Equals(hostNameOrIpAddress, "::1"))
                 return true;
 
             IPHostEntry IpEntry = Dns.GetHostEntry(Dns.GetHostName());
-            var ips = IpEntry.AddressList.Where(c => c.AddressFamily == AddressFamily.InterNetwork).Select(c => c.ToString()).ToArray();
-            return ips.Any(c => c == hostNameOrIp);
+            var ips = IpEntry.AddressList.Where(c => c.AddressFamily == AddressFamily.InterNetwork || c.AddressFamily == AddressFamily.InterNetworkV6).Select(c => c.ToString()).ToArray();
+            return ips.Any(c => c == hostNameOrIpAddress);
         }
 
         /// <summary>

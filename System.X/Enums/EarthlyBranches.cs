@@ -5,6 +5,6 @@
     /// </summary>
     public enum EarthlyBranches
     {
-        子 = 0, 丑, 寅, 卯, 辰, 巳, 午, 未, 申, 酉, 戌, 亥
+        子 = 1, 丑, 寅, 卯, 辰, 巳, 午, 未, 申, 酉, 戌, 亥
     }
 }

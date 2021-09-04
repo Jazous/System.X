@@ -12,3 +12,5 @@
 /System.X/bin/Debug/netcoreapp3.1
 /System.X/obj
 /System.X.Tests/obj
+*.user
+/System.X.Tests/bin/Debug/netcoreapp3.1

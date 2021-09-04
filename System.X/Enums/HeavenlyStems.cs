@@ -5,6 +5,6 @@
     /// </summary>
     public enum HeavenlyStems
     {
-        甲 = 0, 乙, 丙, 丁, 戊, 己, 庚, 辛, 壬, 癸
+        甲 = 1, 乙, 丙, 丁, 戊, 己, 庚, 辛, 壬, 癸
     }
 }

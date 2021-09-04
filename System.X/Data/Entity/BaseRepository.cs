@@ -9,7 +9,7 @@ namespace System.Data.Entity
     public abstract class BaseRepository<TEntity> where TEntity : BaseEntity, new()
     {
         readonly DbContext db;
-        protected BaseRepository(DbContext context)
+        protected  internal BaseRepository(DbContext context)
         {
             this.db = context;
         }
@@ -33,7 +33,6 @@ namespace System.Data.Entity
 
         public void Update(TEntity entity)
         {
-            this.db.Entry(entity).State = EntityState.Modified;
             this.db.Entry(entity).Property(c => c.CreateTime).IsModified = false;
             this.db.Set<TEntity>().Update(entity);
         }
@@ -53,7 +52,12 @@ namespace System.Data.Entity
         public void UpdateRange(IEnumerable<TEntity> entities, IEnumerable<Linq.Expressions.Expression<Func<TEntity, dynamic>>> includes)
         {
             foreach (var entity in entities)
-                Update(entity, includes);
+            {
+                this.db.Entry(entity).State = EntityState.Unchanged;
+                foreach (var prop in includes)
+                    this.db.Entry(entity).Property(prop).IsModified = true;
+            }
+            this.db.Set<TEntity>().UpdateRange(entities);
         }
 
         public void SoftDelete(TEntity entity)

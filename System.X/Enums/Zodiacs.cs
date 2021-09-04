@@ -5,7 +5,7 @@ namespace System.X.Enums
     public enum Zodiacs
     {
         [Description("白羊座")]
-        Aries = 0,
+        Aries = 1,
         [Description("金牛座")]
         Taurus,
         [Description("双子座")]
