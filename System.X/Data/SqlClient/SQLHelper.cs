@@ -57,19 +57,19 @@ namespace System.X.Data.SqlClient
                 port = "3306";
 
             string command = $"mysqldump -h{host} -P{port} -u{user} -p{pwd} --databases {db} > {backupfile}";
-            Fn.ExeCmd(command);
+            Fn.RunCmd(command);
         }
         void ExecMySQL(string host, string port, string user, string pwd, string db, string restorefile)
         {
             if (Fn.IsLocalIpOrHost(host))
             {
                 string command = $"mysql -P{port} -u{user} -p{pwd} {db} < {restorefile}";
-                Fn.ExeCmd(command);
+                Fn.RunCmd(command);
             }
             else
             {
                 string command = $"mysql -h {host} -P{port} -u{user} -p{pwd} {db} < {restorefile}";
-                Fn.ExeCmd(command);
+                Fn.RunCmd(command);
             }
         }
     }

@@ -7,8 +7,10 @@
     {
         public int Compare(string x, string y)
         {
-            if (string.IsNullOrEmpty(x)) return string.IsNullOrEmpty(y) ? 0 : -1;
-            if (string.IsNullOrEmpty(y)) return string.IsNullOrEmpty(x) ? 0 : 1;
+            if (x == null) return y == null ? 0 : -1;
+            if (y == null) return x == null ? 0 : 1;
+            if (x == string.Empty) return y == string.Empty ? 0 : -1;
+            if (y == string.Empty) return x == string.Empty ? 0 : 1;
 
             int xi = GetInt32Length(x);
             int yi = GetInt32Length(y);

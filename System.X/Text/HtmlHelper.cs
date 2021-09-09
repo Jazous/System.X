@@ -1,6 +1,6 @@
 ﻿namespace System.X.Text
 {
-    public sealed class HtmlHelper
+    sealed class HtmlHelper
     {
 
         internal static readonly HtmlHelper Instance = new HtmlHelper();

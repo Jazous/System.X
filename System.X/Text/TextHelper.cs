@@ -41,7 +41,7 @@
                 rng.GetBytes(bytes);
             return new Random(BitConverter.ToInt32(bytes, 0)).Next(minValue, maxValue);
         }
-        public string NewVercode(int length = 4)
+        string NewVercode(int length = 4)
         {
             byte[] bytes = new byte[4];
             using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
@@ -53,15 +53,12 @@
                 chs[i] = _base32[random.Next(0, len)];
             return new string(chs);
         }
-        public string ToBase32String(string value)
-        {
-            throw new NotImplementedException();
-        }
+        
         public string ToBitString(byte[] value)
         {
-            global::System.Int32 length = value.Length * 2;
+            int length = value.Length * 2;
             char[] chars = new char[length];
-            for (global::System.Int32 i = 0, j = 0; i < length; i += 2, j++)
+            for (int i = 0, j = 0; i < length; i += 2, j++)
             {
                 byte tmp = value[j];
                 chars[i] = ToHexValue(tmp / 0x10);
@@ -69,7 +66,7 @@
             }
             return new string(chars, 0, length);
         }
-        public char ToHexValue(global::System.Int32 i)
+        public char ToHexValue(int i)
         {
             return i < 10 ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
         }
@@ -94,7 +91,7 @@
         ///全角空格为12288，半角空格为32
         ///其他字符半角(33-126)与全角(65281-65374)的对应关系是：均相差65248
         ///</remarks>        
-        public string ToSBC(string source)
+        string ToSBC(string source)
         {
             char[] c = source.ToCharArray();
             for (int i = 0; i < c.Length; i++)
@@ -118,7 +115,7 @@
         ///全角空格为12288，半角空格为32
         ///其他字符半角(33-126)与全角(65281-65374)的对应关系是：均相差65248
         ///</remarks>
-        public string ToDBC(string source)
+        string ToDBC(string source)
         {
             char[] c = source.ToCharArray();
             for (int i = 0; i < c.Length; i++)

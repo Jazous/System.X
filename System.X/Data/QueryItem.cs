@@ -22,7 +22,7 @@
         }
         public override string ToString()
         {
-            return $"Name:{Name},Mode:{Mode},Values:[{string.Join(",", Values)}]";
+            return $"{{Name:{Name},Mode:{Mode},Values:[{string.Join(",", Values)}]}}";
         }
     }
 }

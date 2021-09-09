@@ -111,11 +111,6 @@ namespace System.Linq
             }
             return result;
         }
-        public static TSource GetValue<TKey, TSource>(this IDictionary<TKey, TSource> source, TKey key) where TSource : class
-        {
-            TSource result;
-            return source.TryGetValue(key, out result) ? result : null;
-        }
 
         internal static LambdaExpression GetKeySelector<T>(string propertyName)
         {

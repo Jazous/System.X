@@ -50,7 +50,7 @@ namespace System.Net.Ftp
         Unknown
     }
     #endregion
-    public class clsFTP
+    class clsFTP
     {
         #region 属性信息
         /// <summary>

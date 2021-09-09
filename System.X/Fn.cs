@@ -20,31 +20,33 @@ namespace System
         /// <summary>
         /// Operating system that current application is running at.
         /// </summary>
-        public static X.Enums.OSPlatforms OSPlatform { get; }
+        public static X.Enums.OSPlatforms Platform { get; }
 
-        public static System.X.Data.DataHelper Data { get => System.X.Data.DataHelper.Instance; }
-        public static System.X.IO.FileHelper File { get => System.X.IO.FileHelper.Instance; }
+        //public static System.X.Data.DataHelper Data { get => System.X.Data.DataHelper.Instance; }
+        //public static System.X.IO.FileHelper File { get => System.X.IO.FileHelper.Instance; }
         //public static System.X.IO.ProfileHelper Profile { get => System.X.IO.ProfileHelper.Instance; }
-        public static System.X.Text.HtmlHelper Html { get => System.X.Text.HtmlHelper.Instance; }
+        //public static System.X.Text.HtmlHelper Html { get => System.X.Text.HtmlHelper.Instance; }
+        //public static System.X.Text.TextHelper Text { get => System.X.Text.TextHelper.Instance; }
         public static System.X.Drawing.ImageHelper Image { get => System.X.Drawing.ImageHelper.Instance; }
-        public static System.X.Text.TextHelper Text { get => System.X.Text.TextHelper.Instance; }
         public static System.X.Cryptography.CryptoHelper Crypto { get => System.X.Cryptography.CryptoHelper.Instance; }
-        public static System.X.Net.HttpHelper Http { get => X.Net.HttpHelper.Instance; }
+        public static System.X.Net.HttpHelper HTTP { get => X.Net.HttpHelper.Instance; }
         public static System.X.IO.CompressionHelper Compress { get => X.IO.CompressionHelper.Instance; }
 
         static Fn()
         {
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
-                OSPlatform = X.Enums.OSPlatforms.Windows;
+                Platform = X.Enums.OSPlatforms.Windows;
             else if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
-                OSPlatform = X.Enums.OSPlatforms.Linux;
+                Platform = X.Enums.OSPlatforms.Linux;
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
-                OSPlatform = X.Enums.OSPlatforms.MacOSX;
+                Platform = X.Enums.OSPlatforms.MacOSX;
             else
-                OSPlatform = X.Enums.OSPlatforms.Unknown;
+                Platform = X.Enums.OSPlatforms.Unknown;
 
         }
-        private Fn() { }
+        private Fn() {
+        
+        }
 
         public static bool ToBoolean(string value)
         {
@@ -74,7 +76,7 @@ namespace System
         }
         public static DateTime? ToDateTime(string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrEmpty(value))
                 return null;
             DateTime result;
             if (DateTime.TryParse(value, out result))
@@ -83,8 +85,20 @@ namespace System
         }
         public static DateTime? ToDate(string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
-                return null;
+            switch (value)
+            {
+                case null:
+                case "": return null;
+                case "昨天":
+                case "昨日":
+                    return DateTime.Today.AddDays(-1);
+                case "今天":
+                case "今日":
+                    return DateTime.Today;
+                case "明天":
+                case "明日":
+                    return DateTime.Today.AddDays(1);
+            }
             DateTime result;
             if (DateTime.TryParse(value, out result))
                 return result.Date;
@@ -124,33 +138,69 @@ namespace System
 
             return result;
         }
-        public static string GetDescription<T>(T value) where T : Enum
+        public static List<T> ToList<T>(System.Data.DataTable dataTable, params NameValue[] mapping) where T : new()
+        {
+            return System.X.Data.DataHelper.Instance.MapTo<T>(dataTable, mapping);
+        }
+
+        public static string GetDescription(Enum value)
         {
             string text = value.ToString();
             var desc = (System.ComponentModel.DescriptionAttribute)value.GetType().GetField(text).GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false).FirstOrDefault();
             return desc == null ? text : desc.Description;
         }
+        public static string GetDescription<TSource>(Linq.Expressions.Expression<Func<TSource, dynamic>> memberSelector)
+        {
+            return GetAttributes<TSource, System.ComponentModel.DescriptionAttribute>(memberSelector, false).FirstOrDefault()?.Description;
+        }
+        public static TAttribute[] GetAttributes<TSource, TAttribute>(Linq.Expressions.Expression<Func<TSource, dynamic>> memberSelector, bool inherit) where TAttribute : Attribute
+        {
+            var member = (Linq.Expressions.MemberExpression)memberSelector.Body;
+            return (TAttribute[])member.Member.GetCustomAttributes(typeof(TAttribute), inherit);
+        }
+        public static object Invoke(Type type, object[] ctorArgs, string methodName, params object[] methodArgs)
+        {
+            var instance = System.Activator.CreateInstance(type, ctorArgs);
+            return type.GetMethod(methodName).Invoke(instance, methodArgs);
+        }
+
+
         public static string NewGuid()
         {
-            return Guid.NewGuid().ToString();
+            return System.Guid.NewGuid().ToString();
         }
         public static string NewGuid(string format)
         {
             return Guid.NewGuid().ToString(format);
         }
-        public static string NewTempDir()
+        public static string NewDir()
         {
             string tempDir = Path.Combine(TempDir, Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(tempDir);
             return tempDir;
         }
-        public static async Task<string> NewTempFile(byte[] bytes)
+        public static string NewFile()
         {
-            return await Fn.File.Create(bytes);
+            return Path.GetTempFileName();
         }
-        public static async Task<string> NewTempFile(Stream stream)
+        public static string NewFile(string extension)
         {
-            return await Fn.File.Create(stream, false);
+            string path = TempDir + Guid.NewGuid().ToString("N") + extension;
+            System.IO.File.Create(path);
+            return path;
+        }
+        public static Task<string> NewFile(byte[] bytes)
+        {
+            return System.X.IO.FileHelper.Instance.Create(bytes);
+        }
+        public static Task<string> NewFile(Stream stream)
+        {
+            using (stream)
+                return System.X.IO.FileHelper.Instance.Create(stream, false);
+        }
+        public void CopyFolder(string srcDirName, string destDirName, params string[] skipFiles)
+        {
+            System.X.IO.FileHelper.Instance.CopyFolder(srcDirName, destDirName, skipFiles);
         }
 
         public static string Zip(string srcDirName)
@@ -185,7 +235,7 @@ namespace System
         /// </summary>
         /// <param name="command"></param>
         /// <returns></returns>
-        public static string ExeCmd(string command)
+        public static string RunCmd(string command)
         {
             using (var process = new Diagnostics.Process())
             {
@@ -195,7 +245,7 @@ namespace System
                 process.StartInfo.RedirectStandardError = true;
                 process.StartInfo.CreateNoWindow = true;
 
-                switch (OSPlatform)
+                switch (Platform)
                 {
                     case X.Enums.OSPlatforms.Windows:
                         process.StartInfo.FileName = System.IO.Path.Combine(System.Environment.GetEnvironmentVariable("windir"), @"system32\cmd.exe");
@@ -218,7 +268,7 @@ namespace System
                 return process.StandardOutput.ReadToEnd();
             }
         }
-        public static string ExeShell(string name, string args)
+        public static string Run(string fileName, string args)
         {
             using (var process = new Diagnostics.Process())
             {
@@ -227,7 +277,7 @@ namespace System
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
                 process.StartInfo.CreateNoWindow = true;
-                process.StartInfo.FileName = name;
+                process.StartInfo.FileName = fileName;
                 process.StartInfo.Arguments = args;
                 process.Start();
                 process.WaitForExit();
@@ -235,23 +285,9 @@ namespace System
             }
         }
 
-        public static bool Eval(string expression)
+        static bool Eval(string expression)
         {
             throw new NotImplementedException();
-        }
-        public static void DoIF<T>(bool flag, Action action)
-        {
-            if (flag == true) action.Invoke();
-        }
-        public static T DoIF<T>(bool flag, Func<T> source) where T : class
-        {
-            if (flag == true) return source.Invoke();
-            return null;
-        }
-        public static T Invoke<T>(Type type, object[] ctorArgs, string methodName, params object[] methodArgs)
-        {
-            var instance = System.Activator.CreateInstance(type, ctorArgs);
-            return (T)typeof(T).GetMethod(methodName).Invoke(instance, methodArgs);
         }
     }
 }

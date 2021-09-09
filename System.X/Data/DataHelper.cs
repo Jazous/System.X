@@ -34,8 +34,10 @@ namespace System.X.Data
         /// <typeparam name="T"></typeparam>
         /// <param name="dataTable"></param>
         /// <param name="mapping">DataTable's column name mapping T's property name.</param>
+        /// <exception cref="System.InvalidCastException"></exception>
+        /// <exception cref="System.AggregateException"></exception>
         /// <returns></returns>
-        public List<T> MapTo<T>(DataTable dataTable, params KeyValuePair<string, string>[] mapping) where T : new()
+        public List<T> MapTo<T>(DataTable dataTable, params NameValue[] mapping) where T : new()
         {
             PropertyInfo[] properties = GetPropertyInfos(typeof(T));
 
@@ -52,53 +54,43 @@ namespace System.X.Data
                 string cName = dataTable.Columns[i].ColumnName;
                 if (hasMap)
                 {
-                    string mpName = mapping.FirstOrDefault(c => string.Equals(c.Key, cName, StringComparison.OrdinalIgnoreCase)).Value;
+                    string mpName = mapping.FirstOrDefault(c => string.Equals(c.Name, cName, StringComparison.OrdinalIgnoreCase)).Value;
                     if (mpName != null)
                         cName = mpName;
                 }
                 var prop = properties.FirstOrDefault(c => string.Equals(c.Name, cName, StringComparison.OrdinalIgnoreCase));
                 if (prop == null) continue;
 
-                System.Threading.Tasks.Parallel.For(0, rowCount, new ParallelOptions() { MaxDegreeOfParallelism = 10 }, j =>
-                 {
-                     var cell = dataTable.Rows[j][i];
-                     if (cell == null)
-                         return;
-                     try
-                     {
-                         if (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
-                             prop.SetValue(result[j], Convert.ChangeType(cell, prop.PropertyType.GetGenericArguments()[0]), null);
-                         else
-                             prop.SetValue(result[j], Convert.ChangeType(cell, prop.PropertyType), null);
-                     }
-                     catch (InvalidCastException ex)
-                     {
-                         throw new InvalidCastException($"Convert value {cell} to type {prop.PropertyType.Name} failed on row {j} column {i}.", ex);
-                     }
-                 });
-                //for (int j = 0; j < rowCount; j++)
-                //{
-                //    var cell = dataTable.Rows[j][i];
-                //    if (cell == null)
-                //        continue;
-                //    try
-                //    {
-                //        if (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
-                //            prop.SetValue(result[j], Convert.ChangeType(cell, prop.PropertyType.GetGenericArguments()[0]), null);
-                //        else
-                //            prop.SetValue(result[j], Convert.ChangeType(cell, prop.PropertyType), null);
-                //    }
-                //    catch (InvalidCastException ex)
-                //    {
-                //        throw new InvalidCastException($"Convert value {cell} to type {prop.PropertyType.Name} failed on row {j} column {i}.", ex);
-                //    }
-                //}
+                using (var cts = new Threading.CancellationTokenSource())
+                {
+                    System.Threading.Tasks.Parallel.For(0, rowCount, new ParallelOptions() { MaxDegreeOfParallelism = 10, CancellationToken = cts.Token }, j =>
+                    {
+                        if (cts.IsCancellationRequested)
+                            return;
+
+                        var cell = dataTable.Rows[j][i];
+                        if (cell == null)
+                            return;
+
+                        try
+                        {
+                            if (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                                prop.SetValue(result[j], Convert.ChangeType(cell, prop.PropertyType.GetGenericArguments()[0]), null);
+                            else
+                                prop.SetValue(result[j], Convert.ChangeType(cell, prop.PropertyType), null);
+                        }
+                        catch (Exception ex)
+                        {
+                            if (cts.IsCancellationRequested)
+                                return;
+
+                            cts.Cancel();
+                            throw new InvalidCastException($"Convert value {cell} to type {prop.PropertyType.Name} failed on row {j} column {i}.", ex);
+                        }
+                    });
+                }
             }
             return result;
-        }
-        public List<TResult> MapTo<TResult, TSource>(IEnumerable<TSource> source, params KeyValuePair<string, string>[] mapping)
-        {
-            throw new NotImplementedException();
         }
     }
 }

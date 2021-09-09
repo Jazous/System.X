@@ -121,7 +121,7 @@ namespace System.X.IO
         /// <returns>The path to the destination directory on the file system.</returns>
         public string ZipExtract(string srcFileName, bool overwrite = true)
         {
-            string tempDir = Fn.NewTempDir();
+            string tempDir = Fn.NewDir();
             ZipExtract(srcFileName, tempDir, overwrite);
             return tempDir;
         }
@@ -175,7 +175,7 @@ namespace System.X.IO
         /// <returns>The path to the destination directory on the file system.</returns>
         public string TarExtract(string srcFileName)
         {
-            string tempDir = Fn.NewTempDir();
+            string tempDir = Fn.NewDir();
             TarExtract(srcFileName, tempDir);
             return tempDir;
         }
@@ -225,7 +225,7 @@ namespace System.X.IO
         /// <returns>The path to the destination directory on the file system.</returns>
         public string TargzExtract(string srcFileName)
         {
-            string tempDir = Fn.NewTempDir();
+            string tempDir = Fn.NewDir();
             TargzExtract(srcFileName, tempDir);
             return tempDir;
         }

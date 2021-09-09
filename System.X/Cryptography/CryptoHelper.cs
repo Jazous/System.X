@@ -67,25 +67,25 @@ namespace System.X.Cryptography
             return global::System.Text.Encoding.UTF8.GetString(TripleDESDecrypt(buffer, rgbKey, rgbIV));
         }
 
-        public byte[] Aes(byte[] value, byte[] rgbKey, byte[] rgbIV)
+        public byte[] AES(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
             return Encrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.AesCryptoServiceProvider());
         }
-        public string Aes(string value, byte[] rgbKey, byte[] rgbIV)
+        public string AES(string value, byte[] rgbKey, byte[] rgbIV)
         {
-            return global::System.Convert.ToBase64String(Aes(global::System.Text.Encoding.UTF8.GetBytes(value), rgbKey, rgbIV));
+            return global::System.Convert.ToBase64String(AES(global::System.Text.Encoding.UTF8.GetBytes(value), rgbKey, rgbIV));
         }
-        public byte[] AesDecrypt(byte[] value, byte[] rgbKey, byte[] rgbIV)
+        public byte[] AESDecrypt(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
             return Decrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.AesCryptoServiceProvider());
         }
-        public string AesDecrypt(string value, byte[] rgbKey, byte[] rgbIV)
+        public string AESDecrypt(string value, byte[] rgbKey, byte[] rgbIV)
         {
             byte[] buffer = global::System.Convert.FromBase64String(value);
-            return global::System.Text.Encoding.UTF8.GetString(AesDecrypt(buffer, rgbKey, rgbIV));
+            return global::System.Text.Encoding.UTF8.GetString(AESDecrypt(buffer, rgbKey, rgbIV));
         }
 
-        public byte[] Encrypt(System.X.Enums.SymmetricAlgorithms algorithm, byte[] bytes, byte[] rgbKey, byte[] rgbIV)
+        public byte[] Encrypt(System.X.Enums.SymAlgs algorithm, byte[] bytes, byte[] rgbKey, byte[] rgbIV)
         {
             using (var provider = Security.Cryptography.SymmetricAlgorithm.Create(algorithm.ToString()))
             using (var transform = provider.CreateEncryptor(rgbKey, rgbIV))
@@ -97,7 +97,7 @@ namespace System.X.Cryptography
                 return ms.ToArray();
             }
         }
-        public byte[] Decrypt(System.X.Enums.SymmetricAlgorithms algorithm, byte[] bytes, byte[] rgbKey, byte[] rgbIV)
+        public byte[] Decrypt(System.X.Enums.SymAlgs algorithm, byte[] bytes, byte[] rgbKey, byte[] rgbIV)
         {
             using (var provider = Security.Cryptography.SymmetricAlgorithm.Create(algorithm.ToString()))
             using (var transform = provider.CreateDecryptor(rgbKey, rgbIV))
@@ -109,14 +109,14 @@ namespace System.X.Cryptography
                 return ms.ToArray();
             }
         }
-        public string Encrypt(System.X.Enums.SymmetricAlgorithms algorithm, string value, string rgbKey, string rgbIV)
+        public string Encrypt(System.X.Enums.SymAlgs algorithm, string value, string rgbKey, string rgbIV)
         {
             byte[] buffer = System.Text.Encoding.UTF8.GetBytes(value);
             byte[] rgbKeyArray = System.Text.Encoding.UTF8.GetBytes(rgbKey);
             byte[] rgbIVArray = System.Text.Encoding.UTF8.GetBytes(rgbIV);
             return global::System.Convert.ToBase64String(Encrypt(algorithm, buffer, rgbKeyArray, rgbIVArray));
         }
-        public string Decrypt(System.X.Enums.SymmetricAlgorithms algorithm, string value, string rgbKey, string rgbIV)
+        public string Decrypt(System.X.Enums.SymAlgs algorithm, string value, string rgbKey, string rgbIV)
         {
             byte[] buffer = global::System.Convert.FromBase64String(value);
             byte[] rgbKeyArray = System.Text.Encoding.UTF8.GetBytes(rgbKey);
@@ -126,18 +126,18 @@ namespace System.X.Cryptography
 
         public string MD5(string value)
         {
-            return Hash(Enums.HashAlgorithms.MD5, value);
+            return Hash(Enums.HashAlgs.MD5, value);
         }
         public string SHA1(string value)
         {
-            return Hash(Enums.HashAlgorithms.SHA1, value);
+            return Hash(Enums.HashAlgs.SHA1, value);
         }
-        public string Hash(Enums.HashAlgorithms hash, byte[] bytes)
+        public string Hash(Enums.HashAlgs hash, byte[] bytes)
         {
             using (var provider = Security.Cryptography.HashAlgorithm.Create(hash.ToString()))
                 return ToBitString(provider.ComputeHash(bytes));
         }
-        public string Hash(Enums.HashAlgorithms hash, string value)
+        public string Hash(Enums.HashAlgs hash, string value)
         {
             using (var provider = Security.Cryptography.HashAlgorithm.Create(hash.ToString()))
             {
@@ -146,7 +146,7 @@ namespace System.X.Cryptography
                 return ToBitString(provider.ComputeHash(buffer, 0, buffer.Length));
             }
         }
-        public string Hash(Enums.HashAlgorithms hash, global::System.IO.Stream inputStream)
+        public string Hash(Enums.HashAlgs hash, global::System.IO.Stream inputStream)
         {
             using (var provider = Security.Cryptography.HashAlgorithm.Create(hash.ToString()))
                 return ToBitString(provider.ComputeHash(inputStream));
@@ -170,7 +170,7 @@ namespace System.X.Cryptography
             }
         }
 
-        public string RSASign(string value, string privateKey, System.X.Enums.HashAlgorithms hash)
+        public string RSASign(string value, string privateKey, System.X.Enums.HashAlgs hash)
         {
             using (var provider = new global::System.Security.Cryptography.RSACryptoServiceProvider())
             {
@@ -178,7 +178,7 @@ namespace System.X.Cryptography
                 return Convert.ToBase64String(provider.SignData(global::System.Text.Encoding.UTF8.GetBytes(value), global::System.Security.Cryptography.HashAlgorithm.Create(hash.ToString())));
             }
         }
-        public bool RSAVerifySign(string value, string sign, string publicKey, System.X.Enums.HashAlgorithms hash)
+        public bool RSAVerifySign(string value, string sign, string publicKey, System.X.Enums.HashAlgs hash)
         {
             using (var provider = new global::System.Security.Cryptography.RSACryptoServiceProvider())
             {

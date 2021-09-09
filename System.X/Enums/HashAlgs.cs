@@ -1,9 +1,6 @@
 ﻿namespace System.X.Enums
 {
-    /// <summary>
-    /// 哈希算法。
-    /// </summary>
-    public enum HashAlgorithms
+    public enum HashAlgs
     {
         MD5 = 0,
         SHA1,
