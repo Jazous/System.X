@@ -1,6 +1,6 @@
 ﻿namespace System
 {
-    public enum DateFormats
+    public enum DateFormat
     {
         /// <summary>
         /// yyyy-MM-dd.

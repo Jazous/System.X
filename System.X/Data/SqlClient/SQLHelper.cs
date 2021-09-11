@@ -8,6 +8,19 @@ namespace System.X.Data.SqlClient
 {
     class SQLHelper
     {
+        public static int ExecuteSqlNonQuery(string connectionString, string sql, params SqlParameter[] oParams)
+        {
+            using (var conn = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand(sql, conn);
+                conn.Open();
+                if (oParams != null && oParams.Length > 0)
+                    foreach (SqlParameter prm in oParams)
+                        cmd.Parameters.Add(prm);
+                return cmd.ExecuteNonQuery();
+            }
+        }
+
         void BackupDbMSSQL(string connectionStr, string dbName, string filePath)
         {
             using (SqlConnection connection = new SqlConnection())
@@ -61,7 +74,7 @@ namespace System.X.Data.SqlClient
         }
         void ExecMySQL(string host, string port, string user, string pwd, string db, string restorefile)
         {
-            if (Fn.IsLocalIpOrHost(host))
+            if (Fn.IsLocalhost(host))
             {
                 string command = $"mysql -P{port} -u{user} -p{pwd} {db} < {restorefile}";
                 Fn.RunCmd(command);

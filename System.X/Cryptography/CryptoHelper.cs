@@ -85,44 +85,44 @@ namespace System.X.Cryptography
             return global::System.Text.Encoding.UTF8.GetString(AESDecrypt(buffer, rgbKey, rgbIV));
         }
 
-        public byte[] Encrypt(System.X.Enums.SymAlgs algorithm, byte[] bytes, byte[] rgbKey, byte[] rgbIV)
-        {
-            using (var provider = Security.Cryptography.SymmetricAlgorithm.Create(algorithm.ToString()))
-            using (var transform = provider.CreateEncryptor(rgbKey, rgbIV))
-            using (var ms = new global::System.IO.MemoryStream())
-            using (var cs = new global::System.Security.Cryptography.CryptoStream(ms, transform, global::System.Security.Cryptography.CryptoStreamMode.Write))
-            {
-                cs.Write(bytes, 0, bytes.Length);
-                cs.FlushFinalBlock();
-                return ms.ToArray();
-            }
-        }
-        public byte[] Decrypt(System.X.Enums.SymAlgs algorithm, byte[] bytes, byte[] rgbKey, byte[] rgbIV)
-        {
-            using (var provider = Security.Cryptography.SymmetricAlgorithm.Create(algorithm.ToString()))
-            using (var transform = provider.CreateDecryptor(rgbKey, rgbIV))
-            using (var ms = new global::System.IO.MemoryStream())
-            using (var cs = new global::System.Security.Cryptography.CryptoStream(ms, transform, global::System.Security.Cryptography.CryptoStreamMode.Write))
-            {
-                cs.Write(bytes, 0, bytes.Length);
-                cs.FlushFinalBlock();
-                return ms.ToArray();
-            }
-        }
-        public string Encrypt(System.X.Enums.SymAlgs algorithm, string value, string rgbKey, string rgbIV)
-        {
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(value);
-            byte[] rgbKeyArray = System.Text.Encoding.UTF8.GetBytes(rgbKey);
-            byte[] rgbIVArray = System.Text.Encoding.UTF8.GetBytes(rgbIV);
-            return global::System.Convert.ToBase64String(Encrypt(algorithm, buffer, rgbKeyArray, rgbIVArray));
-        }
-        public string Decrypt(System.X.Enums.SymAlgs algorithm, string value, string rgbKey, string rgbIV)
-        {
-            byte[] buffer = global::System.Convert.FromBase64String(value);
-            byte[] rgbKeyArray = System.Text.Encoding.UTF8.GetBytes(rgbKey);
-            byte[] rgbIVArray = System.Text.Encoding.UTF8.GetBytes(rgbIV);
-            return System.Text.Encoding.UTF8.GetString(Decrypt(algorithm, buffer, rgbKeyArray, rgbIVArray));
-        }
+        //public byte[] Encrypt(System.X.Enums.SymAlgs algorithm, byte[] bytes, byte[] rgbKey, byte[] rgbIV)
+        //{
+        //    using (var provider = Security.Cryptography.SymmetricAlgorithm.Create(algorithm.ToString()))
+        //    using (var transform = provider.CreateEncryptor(rgbKey, rgbIV))
+        //    using (var ms = new global::System.IO.MemoryStream())
+        //    using (var cs = new global::System.Security.Cryptography.CryptoStream(ms, transform, global::System.Security.Cryptography.CryptoStreamMode.Write))
+        //    {
+        //        cs.Write(bytes, 0, bytes.Length);
+        //        cs.FlushFinalBlock();
+        //        return ms.ToArray();
+        //    }
+        //}
+        //public byte[] Decrypt(System.X.Enums.SymAlgs algorithm, byte[] bytes, byte[] rgbKey, byte[] rgbIV)
+        //{
+        //    using (var provider = Security.Cryptography.SymmetricAlgorithm.Create(algorithm.ToString()))
+        //    using (var transform = provider.CreateDecryptor(rgbKey, rgbIV))
+        //    using (var ms = new global::System.IO.MemoryStream())
+        //    using (var cs = new global::System.Security.Cryptography.CryptoStream(ms, transform, global::System.Security.Cryptography.CryptoStreamMode.Write))
+        //    {
+        //        cs.Write(bytes, 0, bytes.Length);
+        //        cs.FlushFinalBlock();
+        //        return ms.ToArray();
+        //    }
+        //}
+        //public string Encrypt(System.X.Enums.SymAlgs algorithm, string value, string rgbKey, string rgbIV)
+        //{
+        //    byte[] buffer = System.Text.Encoding.UTF8.GetBytes(value);
+        //    byte[] rgbKeyArray = System.Text.Encoding.UTF8.GetBytes(rgbKey);
+        //    byte[] rgbIVArray = System.Text.Encoding.UTF8.GetBytes(rgbIV);
+        //    return global::System.Convert.ToBase64String(Encrypt(algorithm, buffer, rgbKeyArray, rgbIVArray));
+        //}
+        //public string Decrypt(System.X.Enums.SymAlgs algorithm, string value, string rgbKey, string rgbIV)
+        //{
+        //    byte[] buffer = global::System.Convert.FromBase64String(value);
+        //    byte[] rgbKeyArray = System.Text.Encoding.UTF8.GetBytes(rgbKey);
+        //    byte[] rgbIVArray = System.Text.Encoding.UTF8.GetBytes(rgbIV);
+        //    return System.Text.Encoding.UTF8.GetString(Decrypt(algorithm, buffer, rgbKeyArray, rgbIVArray));
+        //}
 
         public string MD5(string value)
         {

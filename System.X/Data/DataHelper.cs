@@ -6,6 +6,7 @@ using System.Text;
 using System.Linq;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Collections;
 
 namespace System.X.Data
 {
@@ -44,6 +45,9 @@ namespace System.X.Data
             int colCount = dataTable.Columns.Count;
             int rowCount = dataTable.Rows.Count;
 
+            if (rowCount == 0)
+                return new List<T>(0);
+
             List<T> result = new List<T>(rowCount);
             for (int i = 0; i < rowCount; i++)
                 result.Add(new T());
@@ -69,13 +73,14 @@ namespace System.X.Data
                             return;
 
                         var cell = dataTable.Rows[j][i];
-                        if (cell == null)
+                        if (cell == null || cell == DBNull.Value)
                             return;
 
                         try
                         {
                             if (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
                                 prop.SetValue(result[j], Convert.ChangeType(cell, prop.PropertyType.GetGenericArguments()[0]), null);
+                                //new System.ComponentModel.NullableConverter(prop.PropertyType).UnderlyingType;
                             else
                                 prop.SetValue(result[j], Convert.ChangeType(cell, prop.PropertyType), null);
                         }
@@ -85,10 +90,47 @@ namespace System.X.Data
                                 return;
 
                             cts.Cancel();
-                            throw new InvalidCastException($"Convert value {cell} to type {prop.PropertyType.Name} failed on row {j} column {i}.", ex);
+                            throw new InvalidCastException($"Convert value {cell} to type {prop.PropertyType.Name} failed on row {j + 1} column {i + 1}.", ex);
                         }
                     });
                 }
+            }
+            return result;
+        }
+
+        public DataTable MapTo<T>(IEnumerable<T> source, params NameValue[] mapping)
+        {
+            var result = new DataTable();
+            if (!source.Any())
+                return result;
+
+            var properties = GetPropertyInfos(typeof(T));
+            if (properties.Length == 0)
+                return result;
+
+            bool hasMap = mapping != null && mapping.Any();
+            if (hasMap)
+            {
+                var pNameList = mapping.Select(c => c.Name).ToList();
+                properties = properties.Where(c => pNameList.Contains(c.Name, StringComparer.OrdinalIgnoreCase)).ToArray();
+                if (properties.Length == 0)
+                    return result;
+            }
+
+            foreach (var prop in properties)
+            {
+                var ptype = prop.PropertyType;
+                if (ptype.IsGenericType && (ptype.GetGenericTypeDefinition() == typeof(Nullable<>)))
+                    ptype = ptype.GetGenericArguments()[0];
+                var columnName = hasMap ? mapping.Single(c =>string.Equals( c.Name, prop.Name, StringComparison.OrdinalIgnoreCase)).Value : prop.Name;
+                result.Columns.Add(new DataColumn(columnName, ptype));
+            }
+            foreach (var item in source)
+            {
+                var tempList = new ArrayList();
+                foreach (var pi in properties)
+                    tempList.Add(pi.GetValue(item, null));
+                result.LoadDataRow(tempList.ToArray(), true);
             }
             return result;
         }

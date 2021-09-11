@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace System.X.IO
 {
-    public sealed class CompressionHelper
+    public sealed class CompressHelper
     {
-        internal static readonly CompressionHelper Instance = new CompressionHelper();
+        internal static readonly CompressHelper Instance = new CompressHelper();
 
-        private CompressionHelper() { }
+        private CompressHelper() { }
         public async Threading.Tasks.Task<string> BZip2(string value)
         {
             return Convert.ToBase64String(await BZip2(System.Text.Encoding.UTF8.GetBytes(value)));

@@ -30,7 +30,7 @@
 
             return x.CompareTo(y);
         }
-        static int GetInt32Length(string value)
+        int GetInt32Length(string value)
         {
             int len = value.Length > 9 ? 9 : value.Length;
             char ch;

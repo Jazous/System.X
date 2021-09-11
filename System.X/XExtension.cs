@@ -1,8 +1,11 @@
-﻿namespace System
+﻿
+using System.Threading.Tasks;
+
+namespace System
 {
     public static class XExtension
     {
-        public static bool EqualsIgnoreCase(this string source, string value)
+        public static bool EqualsIC(this string source, string value)
         {
             return string.Equals(source, value, StringComparison.OrdinalIgnoreCase);
         }
@@ -42,23 +45,32 @@
         }
 
 
-        public static string ToString(this DateTime? source, DateFormats format)
+        public static string ToString(this DateTime? source, DateFormat format)
         {
             return source == null ? string.Empty : ToString(source.Value, format);
         }
-        public static string ToString(this DateTime source, DateFormats format)
+        public static string ToString(this DateTime source, DateFormat format)
         {
             switch (format)
             {
-                case DateFormats.Date: return source.ToString("yyyy-MM-dd");
-                case DateFormats.DateTime: return source.ToString("yyyy-MM-dd HH:mm:ss");
-                case DateFormats.SDate: return source.ToString("MM-dd");
-                case DateFormats.SDateSTime: return source.ToString("MM-dd HH:mm");
-                case DateFormats.SDateTime: return source.ToString("yyyy-MM-dd HH:mm");
-                case DateFormats.STime: return source.ToString("HH:mm");
-                case DateFormats.Time: return source.ToString("HH:mm:ss");
-                case DateFormats.TimeSpan: return source.ToString("yyyyMMddHHmmssttt");
+                case DateFormat.Date: return source.ToString("yyyy-MM-dd");
+                case DateFormat.DateTime: return source.ToString("yyyy-MM-dd HH:mm:ss");
+                case DateFormat.SDate: return source.ToString("MM-dd");
+                case DateFormat.SDateSTime: return source.ToString("MM-dd HH:mm");
+                case DateFormat.SDateTime: return source.ToString("yyyy-MM-dd HH:mm");
+                case DateFormat.STime: return source.ToString("HH:mm");
+                case DateFormat.Time: return source.ToString("HH:mm:ss");
+                case DateFormat.TimeSpan: return source.ToString("yyyyMMddHHmmssttt");
                 default: return source.ToString();
+            }
+        }
+
+        public static byte[] GetBytes(this System.Drawing.Image source)
+        {
+            using (var ms = new System.IO.MemoryStream())
+            {
+                source.Save(ms, source.RawFormat);
+                return ms.GetBuffer();
             }
         }
     }

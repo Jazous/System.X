@@ -46,7 +46,17 @@ namespace System.X.IO
                 CopyFolder(info, Path.Combine(destDirName, info.Name));
         }
 
-        public async Task<string> Create(byte[] bytes)
+        public string Create(byte[] bytes)
+        {
+            string tempFile = Path.GetTempFileName();
+            using (var fs = System.IO.File.OpenWrite(tempFile))
+            {
+                fs.Write(bytes, 0, bytes.Length);
+                fs.Flush();
+            }
+            return tempFile;
+        }
+        public async Task<string> CreateAsync(byte[] bytes)
         {
             string tempFile = Path.GetTempFileName();
             using (var fs = System.IO.File.OpenWrite(tempFile))
@@ -56,7 +66,17 @@ namespace System.X.IO
             }
             return tempFile;
         }
-        public async Task<string> Create(Stream stream, bool leaveOpen = false)
+        public string Create(Stream stream)
+        {
+            string tempFile = Path.GetTempFileName();
+            using (var fs = System.IO.File.OpenWrite(tempFile))
+            {
+                stream.CopyTo(fs);
+                fs.Flush();
+            }
+            return tempFile;
+        }
+        public async Task<string> CreateAsync(Stream stream)
         {
             string tempFile = Path.GetTempFileName();
             using (var fs = System.IO.File.OpenWrite(tempFile))
@@ -64,8 +84,6 @@ namespace System.X.IO
                 await stream.CopyToAsync(fs);
                 fs.Flush();
             }
-            if (!leaveOpen)
-                stream.Close();
             return tempFile;
         }
     }

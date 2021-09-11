@@ -20,32 +20,30 @@ namespace System
         /// <summary>
         /// Operating system that current application is running at.
         /// </summary>
-        public static X.Enums.OSPlatforms Platform { get; }
+        public static X.Enums.OSPlatform Platform { get; }
 
         //public static System.X.Data.DataHelper Data { get => System.X.Data.DataHelper.Instance; }
         //public static System.X.IO.FileHelper File { get => System.X.IO.FileHelper.Instance; }
         //public static System.X.IO.ProfileHelper Profile { get => System.X.IO.ProfileHelper.Instance; }
         //public static System.X.Text.HtmlHelper Html { get => System.X.Text.HtmlHelper.Instance; }
-        //public static System.X.Text.TextHelper Text { get => System.X.Text.TextHelper.Instance; }
+        //public static System.X.Text.ValidHelper Valid { get => System.X.Text.ValidHelper.Instance; }
         public static System.X.Drawing.ImageHelper Image { get => System.X.Drawing.ImageHelper.Instance; }
         public static System.X.Cryptography.CryptoHelper Crypto { get => System.X.Cryptography.CryptoHelper.Instance; }
         public static System.X.Net.HttpHelper HTTP { get => X.Net.HttpHelper.Instance; }
-        public static System.X.IO.CompressionHelper Compress { get => X.IO.CompressionHelper.Instance; }
+        public static System.X.IO.CompressHelper Compress { get => X.IO.CompressHelper.Instance; }
 
         static Fn()
         {
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
-                Platform = X.Enums.OSPlatforms.Windows;
+                Platform = X.Enums.OSPlatform.Windows;
             else if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
-                Platform = X.Enums.OSPlatforms.Linux;
+                Platform = X.Enums.OSPlatform.Linux;
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
-                Platform = X.Enums.OSPlatforms.MacOSX;
-            else
-                Platform = X.Enums.OSPlatforms.Unknown;
-
+                Platform = X.Enums.OSPlatform.MacOSX;
         }
-        private Fn() {
-        
+        private Fn()
+        {
+
         }
 
         public static bool ToBoolean(string value)
@@ -54,8 +52,14 @@ namespace System
             {
                 case null:
                 case "":
-                case "0": return false;
-                case "1": return true;
+                case "0":
+                case "false":
+                case "False":
+                case "FALSE": return false;
+                case "1":
+                case "true":
+                case "True":
+                case "TRUE": return true;
                 default: break;
             }
             bool result;
@@ -76,8 +80,14 @@ namespace System
         }
         public static DateTime? ToDateTime(string value)
         {
-            if (string.IsNullOrEmpty(value))
-                return null;
+            switch (value)
+            {
+                case null:
+                case "": return null;
+                case "现在":
+                case "Now":
+                    return DateTime.Now;
+            }
             DateTime result;
             if (DateTime.TryParse(value, out result))
                 return result;
@@ -91,12 +101,19 @@ namespace System
                 case "": return null;
                 case "昨天":
                 case "昨日":
+                case "yday":
+                case "Yesterday":
                     return DateTime.Today.AddDays(-1);
                 case "今天":
                 case "今日":
+                case "Today":
+                case "现在":
+                case "Now":
                     return DateTime.Today;
                 case "明天":
                 case "明日":
+                case "tmw":
+                case "Tomorrow":
                     return DateTime.Today.AddDays(1);
             }
             DateTime result;
@@ -142,6 +159,10 @@ namespace System
         {
             return System.X.Data.DataHelper.Instance.MapTo<T>(dataTable, mapping);
         }
+        public static System.Data.DataTable ToDataTable<T>(IEnumerable<T> source, params NameValue[] mapping)
+        {
+            return System.X.Data.DataHelper.Instance.MapTo<T>(source, mapping);
+        }
 
         public static string GetDescription(Enum value)
         {
@@ -152,6 +173,14 @@ namespace System
         public static string GetDescription<TSource>(Linq.Expressions.Expression<Func<TSource, dynamic>> memberSelector)
         {
             return GetAttributes<TSource, System.ComponentModel.DescriptionAttribute>(memberSelector, false).FirstOrDefault()?.Description;
+        }
+        public static string GetDescription<TSource>(string memberName)
+        {
+            var member = typeof(TSource).GetMember(memberName).FirstOrDefault();
+            if (member == null) return null;
+
+            var desc = (System.ComponentModel.DescriptionAttribute)member.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false).FirstOrDefault();
+            return desc == null ? null : desc.Description;
         }
         public static TAttribute[] GetAttributes<TSource, TAttribute>(Linq.Expressions.Expression<Func<TSource, dynamic>> memberSelector, bool inherit) where TAttribute : Attribute
         {
@@ -164,43 +193,20 @@ namespace System
             return type.GetMethod(methodName).Invoke(instance, methodArgs);
         }
 
-
         public static string NewGuid()
         {
             return System.Guid.NewGuid().ToString();
         }
-        public static string NewGuid(string format)
-        {
-            return Guid.NewGuid().ToString(format);
-        }
+
         public static string NewDir()
         {
             string tempDir = Path.Combine(TempDir, Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(tempDir);
             return tempDir;
         }
-        public static string NewFile()
+        public static string NewFilePath(string extension = ".tmp")
         {
-            return Path.GetTempFileName();
-        }
-        public static string NewFile(string extension)
-        {
-            string path = TempDir + Guid.NewGuid().ToString("N") + extension;
-            System.IO.File.Create(path);
-            return path;
-        }
-        public static Task<string> NewFile(byte[] bytes)
-        {
-            return System.X.IO.FileHelper.Instance.Create(bytes);
-        }
-        public static Task<string> NewFile(Stream stream)
-        {
-            using (stream)
-                return System.X.IO.FileHelper.Instance.Create(stream, false);
-        }
-        public void CopyFolder(string srcDirName, string destDirName, params string[] skipFiles)
-        {
-            System.X.IO.FileHelper.Instance.CopyFolder(srcDirName, destDirName, skipFiles);
+            return TempDir + Guid.NewGuid().ToString("N") + extension;
         }
 
         public static string Zip(string srcDirName)
@@ -216,19 +222,7 @@ namespace System
         {
             return Compress.ZipExtract(srcFileName, true);
         }
-        public static bool IsLocalIpOrHost(string hostNameOrIpAddress)
-        {
-            if (string.Equals(hostNameOrIpAddress, "localhost", StringComparison.OrdinalIgnoreCase))
-                return true;
-            if (string.Equals(hostNameOrIpAddress, "127.0.0.1"))
-                return true;
-            if (string.Equals(hostNameOrIpAddress, "::1"))
-                return true;
 
-            IPHostEntry IpEntry = Dns.GetHostEntry(Dns.GetHostName());
-            var ips = IpEntry.AddressList.Where(c => c.AddressFamily == AddressFamily.InterNetwork || c.AddressFamily == AddressFamily.InterNetworkV6).Select(c => c.ToString()).ToArray();
-            return ips.Any(c => c == hostNameOrIpAddress);
-        }
 
         /// <summary>
         /// Execute command with cmd.exe or /bin/bash then exit.
@@ -247,17 +241,17 @@ namespace System
 
                 switch (Platform)
                 {
-                    case X.Enums.OSPlatforms.Windows:
+                    case X.Enums.OSPlatform.Windows:
                         process.StartInfo.FileName = System.IO.Path.Combine(System.Environment.GetEnvironmentVariable("windir"), @"system32\cmd.exe");
                         break;
-                    case X.Enums.OSPlatforms.Linux:
+                    case X.Enums.OSPlatform.Linux:
                         process.StartInfo.FileName = "/bin/bash";
                         break;
-                    case X.Enums.OSPlatforms.MacOSX:
+                    case X.Enums.OSPlatform.MacOSX:
                         process.StartInfo.FileName = "/bin/bash";
                         break;
                     default:
-                        throw new System.InvalidOperationException("Unknown OS Platform!");
+                        return null;
                 }
 
                 process.Start();
@@ -288,6 +282,28 @@ namespace System
         static bool Eval(string expression)
         {
             throw new NotImplementedException();
+        }
+
+        public static bool Ping(string host)
+        {
+            var options = new Net.NetworkInformation.PingOptions() { DontFragment = true };
+            var buffer = Text.Encoding.ASCII.GetBytes(".");
+            using (var p = new System.Net.NetworkInformation.Ping())
+                return p.Send(host, 2000, buffer, options).Status == Net.NetworkInformation.IPStatus.Success;
+        }
+
+        public static bool IsLocalhost(string host)
+        {
+            if (string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (string.Equals(host, "127.0.0.1"))
+                return true;
+            if (string.Equals(host, "::1"))
+                return true;
+
+            var IpEntry = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName());
+            var ips = IpEntry.AddressList.Where(c => c.AddressFamily == AddressFamily.InterNetwork || c.AddressFamily == AddressFamily.InterNetworkV6).Select(c => c.ToString()).ToArray();
+            return ips.Any(c => c == host);
         }
     }
 }

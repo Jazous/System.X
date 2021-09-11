@@ -5,9 +5,13 @@
     /// </summary>
     public sealed class Assert
     {
-        public static void IsNotNull<T>(T obj) where T : class
+        public static void ArgNotNull<T>(T obj, string name) where T : class
         {
-            if (obj == null) throw new ArgumentNullException(nameof(obj));
+            if (obj == null) throw new ArgumentNullException(name);
+        }
+        public static void ArgValid(bool flag, string name, string message)
+        {
+            if (flag) throw new ArgumentException(name);
         }
     }
 }
