@@ -5,7 +5,7 @@ namespace System
 {
     public static class XExtension
     {
-        public static bool EqualsIC(this string source, string value)
+        public static bool EqualsIgC(this string source, string value)
         {
             return string.Equals(source, value, StringComparison.OrdinalIgnoreCase);
         }

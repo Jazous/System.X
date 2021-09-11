@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace System.X.Text
 {
-    public sealed class ValidHelper
+    sealed class ValidHelper
     {
         internal static readonly ValidHelper Instance = new ValidHelper();
         private ValidHelper() { }

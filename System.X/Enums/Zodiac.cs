@@ -2,7 +2,7 @@
 
 namespace System.X.Enums
 {
-    public enum Zodiacs
+    public enum Zodiac
     {
         [Description("白羊座")]
         Aries = 1,

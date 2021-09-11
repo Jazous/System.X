@@ -43,7 +43,7 @@ namespace System
         }
         public bool IsEmpty()
         {
-            return (this.Name == null || this.Name.Length == 0) && (this.Value == null || this.Value.Length == 0);
+            return this.Name == null && this.Value == null;
         }
         public override string ToString()
         {

@@ -11,24 +11,10 @@ namespace System.X.Tests
     {
         static void Main(string[] args)
         {
-           // byte[] buffer = System.IO.File.ReadAllBytes(@"D:\dataset\精细\DJI_0001.JPG");
-            //byte[] res= Fn.Image.Thumbnail(buffer, 400, 300);
-            //byte[] res2 = Fn.Image.Thumbnail(buffer, 0.5f);
-            //System.IO.File.WriteAllBytes(@"D:\dataset\精细\DJI_0001_0001.JPG", res2);
-            // string tt = Base32Encoding.ToString(Fn.UTF8.GetBytes("20210902204100000"));
-            //string cc=  Fn.UTF8.GetString(Base32Encoding.ToBytes(tt));
-            return;
-            //0、1、1 - 1、2批次、10、10批次
-            //List<string> dataList = new List<string>() { "c", "0", "1", "e", "1-1", "10", "2", "2批次", "1批次", "1 c", "a", "1-大", "11", "11 批次", "11-01", "24", "10批次", "d", "a2", " " };
-            //List<string> dataList = new List<string>() { "1", "1-1", "2", "2批次", "1批次", "1 c", " " };
             var watch = new Diagnostics.Stopwatch();
             watch.Start();
             watch.Stop();
-            //foreach (string data in dataList)
-            //{
-            //    Console.WriteLine(txt);
-            //}
-            Console.WriteLine(watch.ElapsedMilliseconds);
+            Console.WriteLine(watch.ElapsedTicks);
         }
     }
     public class Base32Encoding
@@ -152,12 +138,10 @@ namespace System.X.Tests
 
             throw new ArgumentException("Byte is not a value Base32 value.", "b");
         }
-
     }
 
     public class UserEntity
     {
-
         public int Id { get; set; }
         public string Name { get; set; }
     }

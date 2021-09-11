@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace System.X.IO
 {
-    public sealed class FileHelper
+    internal sealed class FileHelper
     {
         internal static readonly FileHelper Instance = new FileHelper();
         private FileHelper()

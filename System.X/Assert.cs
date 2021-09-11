@@ -1,17 +1,14 @@
 ﻿namespace System
 {
-    /// <summary>
-    /// 断言。
-    /// </summary>
     public sealed class Assert
     {
-        public static void ArgNotNull<T>(T obj, string name) where T : class
+        public static void ArgNotNull<T>(T obj, string paramName) where T : class
         {
-            if (obj == null) throw new ArgumentNullException(name);
+            if (obj == null) throw new ArgumentNullException(paramName);
         }
-        public static void ArgValid(bool flag, string name, string message)
+        public static void ArgValid(bool condition, string paramName, string message)
         {
-            if (flag) throw new ArgumentException(name);
+            if (condition) throw new ArgumentException(message, paramName);
         }
     }
 }

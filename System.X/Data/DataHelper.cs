@@ -10,7 +10,7 @@ using System.Collections;
 
 namespace System.X.Data
 {
-    public sealed class DataHelper
+    internal sealed class DataHelper
     {
         internal static readonly DataHelper Instance = new DataHelper();
         static readonly ConcurrentDictionary<Type, PropertyInfo[]> _propcache = new ConcurrentDictionary<Type, PropertyInfo[]>();

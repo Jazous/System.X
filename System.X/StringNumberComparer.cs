@@ -1,19 +1,30 @@
 ﻿namespace System
 {
     /// <summary>
-    /// Integer prefix string comparer suport 9 bit number for special sorting.
+    /// Number prefix string comparer for special sorting.
     /// </summary>
-    public sealed class StringIntegerComparer : System.Collections.Generic.IComparer<string>
+    public sealed class StringNumberComparer : System.Collections.Generic.IComparer<string>
     {
+        readonly int mark;
+        public bool NullsLast { get => mark == -1; }
+
+        public StringNumberComparer() : this(false)
+        {
+        }
+        public StringNumberComparer(bool nullsLast)
+        {
+            this.mark = nullsLast ? -1 : 1;
+        }
+
         public int Compare(string x, string y)
         {
-            if (x == null) return y == null ? 0 : -1;
-            if (y == null) return x == null ? 0 : 1;
-            if (x == string.Empty) return y == string.Empty ? 0 : -1;
-            if (y == string.Empty) return x == string.Empty ? 0 : 1;
+            if (x == null) return y == null ? 0 : -mark;
+            if (y == null) return x == null ? 0 : mark;
+            if (x == string.Empty) return y == string.Empty ? 0 : -mark;
+            if (y == string.Empty) return x == string.Empty ? 0 : mark;
 
-            int xi = GetInt32Length(x);
-            int yi = GetInt32Length(y);
+            int xi = GetNumberIndex(x);
+            int yi = GetNumberIndex(y);
 
             if (xi != -1 && yi != -1)
             {
@@ -30,9 +41,9 @@
 
             return x.CompareTo(y);
         }
-        int GetInt32Length(string value)
+        int GetNumberIndex(string value)
         {
-            int len = value.Length > 9 ? 9 : value.Length;
+            int len = value.Length;
             char ch;
             int i = 0;
             bool flag = false;

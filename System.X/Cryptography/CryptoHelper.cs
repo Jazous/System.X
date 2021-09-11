@@ -132,12 +132,36 @@ namespace System.X.Cryptography
         {
             return Hash(Enums.HashAlgs.SHA1, value);
         }
-        public string Hash(Enums.HashAlgs hash, byte[] bytes)
+        public string SHA1(byte[] bytes)
+        {
+            return Hash(Enums.HashAlgs.SHA1, bytes);
+        }
+        public string SHA1(global::System.IO.Stream inputStream)
+        {
+            return Hash(Enums.HashAlgs.SHA1, inputStream);
+        }
+        public string SHA256(string value)
+        {
+            return Hash(Enums.HashAlgs.SHA256, value);
+        }
+        public string SHA256(byte[] bytes)
+        {
+            return Hash(Enums.HashAlgs.SHA256, bytes);
+        }
+        public string SHA256(global::System.IO.Stream inputStream)
+        {
+            return Hash(Enums.HashAlgs.SHA256, inputStream);
+        }
+        public string SHA512(string value)
+        {
+            return Hash(Enums.HashAlgs.SHA512, value);
+        }
+        string Hash(Enums.HashAlgs hash, byte[] bytes)
         {
             using (var provider = Security.Cryptography.HashAlgorithm.Create(hash.ToString()))
                 return ToBitString(provider.ComputeHash(bytes));
         }
-        public string Hash(Enums.HashAlgs hash, string value)
+        string Hash(Enums.HashAlgs hash, string value)
         {
             using (var provider = Security.Cryptography.HashAlgorithm.Create(hash.ToString()))
             {
@@ -146,7 +170,7 @@ namespace System.X.Cryptography
                 return ToBitString(provider.ComputeHash(buffer, 0, buffer.Length));
             }
         }
-        public string Hash(Enums.HashAlgs hash, global::System.IO.Stream inputStream)
+        string Hash(Enums.HashAlgs hash, global::System.IO.Stream inputStream)
         {
             using (var provider = Security.Cryptography.HashAlgorithm.Create(hash.ToString()))
                 return ToBitString(provider.ComputeHash(inputStream));

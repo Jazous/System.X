@@ -28,14 +28,6 @@ namespace System.X.Text
             Array.Copy(msecsArray, msecsArray.Length - 4, guidArray, guidArray.Length - 4, 4);
             return new Guid(guidArray);
         }
-        public string NewGuid(string format)
-        {
-            return Guid.NewGuid().ToString(format);
-        }
-        public string NewGuid()
-        {
-            return Guid.NewGuid().ToString();
-        }
         public int NewRandom(int minValue, int maxValue)
         {
             byte[] bytes = new byte[4];
