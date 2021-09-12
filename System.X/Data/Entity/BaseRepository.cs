@@ -8,10 +8,12 @@ namespace System.Data.Entity
 {
     public abstract class BaseRepository<TEntity> where TEntity : BaseEntity, new()
     {
+        protected internal UnitOfWork UnitOfWork { get; }
         readonly DbContext db;
-        protected  internal BaseRepository(DbContext context)
+        protected internal BaseRepository(UnitOfWork unitOfWork)
         {
-            this.db = context;
+            this.UnitOfWork = unitOfWork;
+            this.db = unitOfWork.DbContext;
         }
 
         public void Insert(TEntity entity)
@@ -110,21 +112,31 @@ namespace System.Data.Entity
         protected virtual IOrderedQueryable<TEntity> BuildQuery(IEnumerable<QueryItem> queryItems)
         {
             var query = db.Set<TEntity>().AsNoTracking().Where(c => !c.IsDeleted);
+
             foreach (var item in queryItems)
             {
-                var tbs = item.Name.Split('.');
-                switch (item.Mode)
-                {
-                    case QueryMode.Between:
-                        break;
-                    case QueryMode.Contains:
-                        break;
+                if (item.Name.StartsWith("#"))
+                    continue;
 
-                }
+                var predicate = X.Linq.ExpressionHelper.Instance.LambdaBuild<TEntity>(item.Name, item.Mode, item.Values);
+                if (predicate != null)
+                    query = query.Where(predicate);
             }
-            return query.OrderByDescending(c => c.CreateTime);
-        }
+            var sorts = queryItems.Where(c => string.Equals(c.Name, "#SortPropertyName", StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (sorts.Length == 0)
+                return query.OrderByDescending(c => c.CreateTime);
 
+            var sort = sorts[0];
+            var desc = Fn.ToBoolean(sort.Values[0]);
+            IOrderedQueryable<TEntity> result = desc ? query.OrderByDescending(sort.Name) : query.OrderBy(sort.Name);
+            for (int i = 1; i < sorts.Length; i++)
+            {
+                sort = sorts[i];
+                desc = Fn.ToBoolean(sort.Values[i]);
+                result = desc ? result.ThenByDescending(sort.Name) : result.ThenBy(sort.Name);
+            }
+            return result;
+        }
         public List<TEntity> GetAll()
         {
             return this.db.Set<TEntity>().ToList();

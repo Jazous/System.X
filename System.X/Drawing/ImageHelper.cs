@@ -173,121 +173,156 @@ namespace System.X.Drawing
                 image.Save(outputStream, saveFormat ?? image.RawFormat);
         }
 
-        //public Bitmap LD(Bitmap image, byte value)
-        //{
-        //    Bitmap bm = new Bitmap(image.Width, image.Height);
-        //    int x, y, resultR, resultG, resultB;
-        //    Color pixel;
-        //    for (x = 0; x < image.Width; x++)
-        //    {
-        //        for (y = 0; y < image.Height; y++)
-        //        {
-        //            pixel = image.GetPixel(x, y);
-        //            resultR = RGBFloor(pixel.R + value);
-        //            resultG = RGBFloor(pixel.G + value);
-        //            resultB = RGBFloor(pixel.B + value);
-        //            bm.SetPixel(x, y, Color.FromArgb(resultR, resultG, resultB));
-        //        }
-        //    }
-        //    return bm;
-        //}
-        //int RGBFloor(int value)
-        //{
-        //    if (value < 0) return 0;
-        //    if (value > 255) return 255;
-        //    return value;
-        //}
+        public Bitmap LD(Bitmap image, byte value)
+        {
+            Bitmap bm = new Bitmap(image.Width, image.Height);
+            int x, y, resultR, resultG, resultB;
+            Color pixel;
+            for (x = 0; x < image.Width; x++)
+            {
+                for (y = 0; y < image.Height; y++)
+                {
+                    pixel = image.GetPixel(x, y);
+                    resultR = RGBFloor(pixel.R + value);
+                    resultG = RGBFloor(pixel.G + value);
+                    resultB = RGBFloor(pixel.B + value);
+                    bm.SetPixel(x, y, Color.FromArgb(resultR, resultG, resultB));
+                }
+            }
+            return bm;
+        }
+        int RGBFloor(int value)
+        {
+            if (value < 0) return 0;
+            if (value > 255) return 255;
+            return value;
+        }
+        public Bitmap ReverseColor(Bitmap image)
+        {
+            Bitmap bm = new Bitmap(image.Width, image.Height);
+            int x, y, r, g, b;
+            Color pixel;
+            for (x = 0; x < image.Width; x++)
+            {
+                for (y = 0; y < image.Height; y++)
+                {
+                    pixel = image.GetPixel(x, y);
+                    r = 255 - pixel.R;
+                    g = 255 - pixel.G;
+                    b = 255 - pixel.B;
+                    bm.SetPixel(x, y, Color.FromArgb(r, g, b));
+                }
+            }
+            return bm;
+        }
 
-        //public Bitmap RevColor(Bitmap image)
-        //{
-        //    Bitmap bm = new Bitmap(image.Width, image.Height);
-        //    int x, y, r, g, b;
-        //    Color pixel;
-        //    for (x = 0; x < image.Width; x++)
-        //    {
-        //        for (y = 0; y < image.Height; y++)
-        //        {
-        //            pixel = image.GetPixel(x, y);
-        //            r = 255 - pixel.R;
-        //            g = 255 - pixel.G;
-        //            b = 255 - pixel.B;
-        //            bm.SetPixel(x, y, Color.FromArgb(r, g, b));
-        //        }
-        //    }
-        //    return bm;
-        //}
+        public Bitmap FilterColor(Bitmap image, X.Drawing.ColorChannel channel)
+        {
+            int width = image.Width;
+            int height = image.Height;
+            Bitmap bm = new Bitmap(width, height);
+            int x, y;
+            Color pixel;
 
-        //public Bitmap BW(Bitmap image)
-        //{
-        //    int width = image.Width;
-        //    int height = image.Height;
-        //    Bitmap bm = new Bitmap(width, height);
-        //    int x, y, result;
-        //    Color pixel;
-        //    for (x = 0; x < width; x++)
-        //    {
-        //        for (y = 0; y < height; y++)
-        //        {
-        //            pixel = image.GetPixel(x, y);
-        //            result = (pixel.R + pixel.G + pixel.B) / 3;
-        //            bm.SetPixel(x, y, Color.FromArgb(result, result, result));
-        //        }
-        //    }
-        //    return bm;
-        //}
+            for (x = 0; x < width; x++)
+            {
+                for (y = 0; y < height; y++)
+                {
+                    pixel = image.GetPixel(x, y);
+                    switch (channel)
+                    {
+                        case ColorChannel.Red: bm.SetPixel(x, y, Color.FromArgb(0, pixel.G, pixel.B)); break;
+                        case ColorChannel.Green: bm.SetPixel(x, y, Color.FromArgb(pixel.R, 0, pixel.B)); break;
+                        case ColorChannel.Blue: bm.SetPixel(x, y, Color.FromArgb(pixel.R, pixel.G, 0)); break;
+                        case ColorChannel.Red | ColorChannel.Green: bm.SetPixel(x, y, Color.FromArgb(0, 0, pixel.B)); break;
+                        case ColorChannel.Red | ColorChannel.Blue: bm.SetPixel(x, y, Color.FromArgb(0, 0, pixel.B)); break;
+                        case ColorChannel.Green | ColorChannel.Blue: bm.SetPixel(x, y, Color.FromArgb(0, 0, pixel.B)); break;
+                        case ColorChannel.Red | ColorChannel.Green | ColorChannel.Blue: bm.SetPixel(x, y, Color.FromArgb(0, 0, 0)); break;
+                    }
+                }
+            }
+            return bm;
+        }
 
-        //public Bitmap FilterColor(Bitmap image)
-        //{
-        //    int width = image.Width;
-        //    int height = image.Height;
-        //    Bitmap bm = new Bitmap(width, height);
-        //    int x, y;
-        //    Color pixel;
-
-        //    for (x = 0; x < width; x++)
-        //    {
-        //        for (y = 0; y < height; y++)
-        //        {
-        //            pixel = image.GetPixel(x, y);
-        //            bm.SetPixel(x, y, Color.FromArgb(0, pixel.G, pixel.B));
-        //        }
-        //    }
-        //    return bm;
-        //}
-        //public Bitmap RevVertical(Bitmap image)
-        //{
-        //    int width = image.Width;
-        //    int height = image.Height;
-        //    Bitmap bm = new Bitmap(width, height);
-        //    int x, y, z;
-        //    Color pixel;
-        //    for (y = height - 1; y >= 0; y--)
-        //    {
-        //        for (x = width - 1, z = 0; x >= 0; x--)
-        //        {
-        //            pixel = image.GetPixel(x, y);
-        //            bm.SetPixel(z++, y, Color.FromArgb(pixel.R, pixel.G, pixel.B));
-        //        }
-        //    }
-        //    return bm;
-        //}
-        //public Bitmap RevHorizontal(Bitmap image)
-        //{
-        //    int width = image.Width;
-        //    int height = image.Height;
-        //    Bitmap bm = new Bitmap(width, height);
-        //    int x, y, z;
-        //    Color pixel;
-        //    for (x = 0; x < width; x++)
-        //    {
-        //        for (y = height - 1, z = 0; y >= 0; y--)
-        //        {
-        //            pixel = image.GetPixel(x, y);
-        //            bm.SetPixel(x, z++, Color.FromArgb(pixel.R, pixel.G, pixel.B));
-        //        }
-        //    }
-        //    return bm;
-        //}
+        public Bitmap BW(Bitmap image)
+        {
+            int width = image.Width;
+            int height = image.Height;
+            Bitmap bm = new Bitmap(width, height);
+            int x, y, result;
+            Color pixel;
+            for (x = 0; x < width; x++)
+            {
+                for (y = 0; y < height; y++)
+                {
+                    pixel = image.GetPixel(x, y);
+                    result = (pixel.R + pixel.G + pixel.B) / 3;
+                    bm.SetPixel(x, y, Color.FromArgb(result, result, result));
+                }
+            }
+            return bm;
+        }
+        public Bitmap Flip(Bitmap image, X.Drawing.FlipMode mode)
+        {
+            switch (mode)
+            {
+                case FlipMode.Horizontal: return FlipHorizontal(image);
+                case FlipMode.Vertical: return FlipVertical(image);
+                case FlipMode.Both: return FlipBoth(image);
+                default:return image;
+            }
+        }
+        Bitmap FlipBoth(Bitmap image)
+        {
+            int width = image.Width;
+            int height = image.Height;
+            Bitmap bm = new Bitmap(width, height);
+            int x, y;
+            Color pixel;
+            for (x = 0; x < width; x++)
+            {
+                for (y = 0; y < height; y++)
+                {
+                    pixel = image.GetPixel(x, y);
+                    bm.SetPixel(width - x - 1, height - y - 1, Color.FromArgb(pixel.R, pixel.G, pixel.B));
+                }
+            }
+            return bm;
+        }
+        Bitmap FlipVertical(Bitmap image)
+        {
+            int width = image.Width;
+            int height = image.Height;
+            Bitmap bm = new Bitmap(width, height);
+            int x, y, z;
+            Color pixel;
+            for (y = height - 1; y >= 0; y--)
+            {
+                for (x = width - 1, z = 0; x >= 0; x--)
+                {
+                    pixel = image.GetPixel(x, y);
+                    bm.SetPixel(z++, y, Color.FromArgb(pixel.R, pixel.G, pixel.B));
+                }
+            }
+            return bm;
+        }
+        Bitmap FlipHorizontal(Bitmap image)
+        {
+            int width = image.Width;
+            int height = image.Height;
+            Bitmap bm = new Bitmap(width, height);
+            int x, y, z;
+            Color pixel;
+            for (x = 0; x < width; x++)
+            {
+                for (y = height - 1, z = 0; y >= 0; y--)
+                {
+                    pixel = image.GetPixel(x, y);
+                    bm.SetPixel(x, z++, Color.FromArgb(pixel.R, pixel.G, pixel.B));
+                }
+            }
+            return bm;
+        }
 
         System.Drawing.Bitmap InternalQRCode(string content, int pixel = 11, int version = -1, Bitmap logo = null)
         {

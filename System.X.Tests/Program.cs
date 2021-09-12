@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.Text;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace System.X.Tests
@@ -11,10 +12,27 @@ namespace System.X.Tests
     {
         static void Main(string[] args)
         {
-            var watch = new Diagnostics.Stopwatch();
-            watch.Start();
-            watch.Stop();
-            Console.WriteLine(watch.ElapsedTicks);
+            //IEnumerable<string> dd = new List<string>() { "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "Z" };
+
+            List<UserEntity> userList = new List<UserEntity>();
+            userList.Add(new UserEntity() { Id = 1, Name = "a", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 1, Name = "超级管理员" } }, Department = new Department() { Id = 1, Name = "研发部", Duty = new DepartmentDuty() { Id = 1 } } });
+            userList.Add(new UserEntity() { Id = 2, Name = "b", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = new Department() { Id = 1, Name = "研发部", Duty = new DepartmentDuty() { Id = 1 } } });
+            userList.Add(new UserEntity() { Id = 3, Name = "c", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = new Department() { Id = 2, Name = "人事部", Duty = new DepartmentDuty() { Id = 2 } } });
+            userList.Add(new UserEntity() { Id = 4, Name = "d", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = new Department() { Id = 2, Name = "人事部", Duty = new DepartmentDuty() { Id = 3 } } });
+            userList.Add(new UserEntity() { Id = 5, Name = "e", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = new Department() { Id = 3, Name = "财务部", Duty = new DepartmentDuty() { Id = 3 } } });
+            var query = userList.AsQueryable();
+
+            var predicate = Fn.Expression.Equal<UserEntity>("Department.Duty.Id", "3");
+
+
+            var data = query.Where(predicate).ToList();
+
+            //dd.Contains("z", true);
+            //var watch = new Diagnostics.Stopwatch();
+            //watch.Start();
+            //dd.Contains("z", true);
+            //watch.Stop();
+            //Console.WriteLine(watch.ElapsedTicks);
         }
     }
     public class Base32Encoding
@@ -141,6 +159,29 @@ namespace System.X.Tests
     }
 
     public class UserEntity
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public DateTime CreateDate { get; set; }
+
+        public Department Department { get; set; }
+
+        public List<Role> Roles { get; set; }
+    }
+    public class Department
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+
+        public DepartmentDuty Duty { get; set; }
+
+    }
+    public class DepartmentDuty
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+    public class Role
     {
         public int Id { get; set; }
         public string Name { get; set; }

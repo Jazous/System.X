@@ -8,7 +8,7 @@ namespace System.X.Linq
 {
     public sealed class QueryableBuilder<T>
     {
-        IQueryable<T> Query { get; set; }
+        IQueryable<T> Query { get; }
 
 
         public QueryableBuilder(IQueryable<T> source)

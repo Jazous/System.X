@@ -6,13 +6,21 @@
     public sealed class StringNumberComparer : System.Collections.Generic.IComparer<string>
     {
         readonly int mark;
+        readonly int maxComparLength;
         public bool NullsLast { get => mark == -1; }
 
-        public StringNumberComparer() : this(false)
+        public StringNumberComparer() : this(false, -1)
         {
         }
-        public StringNumberComparer(bool nullsLast)
+        public StringNumberComparer(int maxComparLength) : this(false, maxComparLength)
         {
+        }
+        public StringNumberComparer(bool nullsLast) : this(nullsLast, -1)
+        {
+        }
+        public StringNumberComparer(bool nullsLast, int maxComparLength)
+        {
+            this.maxComparLength = maxComparLength > 0 ? maxComparLength : 0x20;
             this.mark = nullsLast ? -1 : 1;
         }
 
@@ -43,7 +51,7 @@
         }
         int GetNumberIndex(string value)
         {
-            int len = value.Length;
+            int len = value.Length > this.maxComparLength ? this.maxComparLength : value.Length;
             char ch;
             int i = 0;
             bool flag = false;

@@ -10,32 +10,32 @@ namespace System.Data.Entity
 {
     public class UnitOfWork : IDisposable
     {
-        DbContext db;
+        protected internal DbContext DbContext { get; }
 
         public UnitOfWork(DbContext context)
         {
-            this.db = context;
+            this.DbContext = context;
         }
 
         public IDbContextTransaction BeginTransaction()
         {
-            return this.db.Database.BeginTransaction();
+            return this.DbContext.Database.BeginTransaction();
         }
 
         public int SaveChanges()
         {
-            return db.SaveChanges();
+            return this.DbContext.SaveChanges();
         }
 
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken)
         {
-            return db.SaveChangesAsync(cancellationToken);
+            return this.DbContext.SaveChangesAsync(cancellationToken);
         }
 
         public void Dispose()
         {
-            if (db != null)
-                db.Dispose();
+            if (this.DbContext != null)
+                this.DbContext.Dispose();
             GC.SuppressFinalize(this);
         }
     }

@@ -18,7 +18,11 @@ namespace System
                 return result;
             return null;
         }
-        public static string TrimStart(this string source, string value, StringComparison comparisonType)
+        public static string TrimStart(this string source, string value, bool ignoreCase)
+        {
+            return TrimStart(source, value, ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+        }
+        static string TrimStart(this string source, string value, StringComparison comparisonType)
         {
             if (string.IsNullOrEmpty(source))
                 return string.Empty;
@@ -27,7 +31,11 @@ namespace System
                 return TrimStart(source.Substring(0, value.Length), value, comparisonType);
             return source;
         }
-        public static string TrimEnd(this string source, string value, StringComparison comparisonType)
+        public static string TrimEnd(this string source, string value, bool ignoreCase)
+        {
+            return TrimEnd(source, value, ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+        }
+        static string TrimEnd(this string source, string value, StringComparison comparisonType)
         {
             if (string.IsNullOrEmpty(source))
                 return string.Empty;
@@ -36,12 +44,13 @@ namespace System
                 return TrimStart(source.Substring(source.Length - value.Length, value.Length), value, comparisonType);
             return source;
         }
+
         public static TSource Get<TKey, TSource>(this Collections.Generic.IDictionary<TKey, TSource> source, TKey key)
         {
             TSource result;
             if (source.TryGetValue(key, out result))
                 return result;
-            return default(TSource);
+            return default;
         }
 
 

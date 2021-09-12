@@ -31,6 +31,7 @@ namespace System
         public static System.X.Cryptography.CryptoHelper Crypto { get => System.X.Cryptography.CryptoHelper.Instance; }
         public static System.X.Net.HttpHelper HTTP { get => X.Net.HttpHelper.Instance; }
         public static System.X.IO.CompressHelper Compress { get => X.IO.CompressHelper.Instance; }
+        public static System.X.Linq.ExpressionHelper Expression { get => System.X.Linq.ExpressionHelper.Instance; }
 
         static Fn()
         {

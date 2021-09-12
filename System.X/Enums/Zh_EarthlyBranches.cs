@@ -3,7 +3,7 @@
     /// <summary>
     /// 地支。
     /// </summary>
-    public enum EarthlyBranches
+    public enum Zh_EarthlyBranches
     {
         子 = 1, 丑, 寅, 卯, 辰, 巳, 午, 未, 申, 酉, 戌, 亥
     }
