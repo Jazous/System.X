@@ -31,11 +31,12 @@ namespace System
             if (obj == null)
                 return false;
             if (obj is NameValue)
-            {
-                var other = (NameValue)obj;
-                return other.Name == this.Name && other.Value == this.Value;
-            }
+                return Equals((NameValue)obj);
             return false;
+        }
+        public bool Equals(NameValue nv)
+        {
+            return nv.Name == this.Name && nv.Value == this.Value;
         }
         public override int GetHashCode()
         {
@@ -47,7 +48,7 @@ namespace System
         }
         public override string ToString()
         {
-            return $"{{Name:{ Name},Value:{ Value}}}";
+            return $"{{\"name\":\"{ Name}\",\"value\":\"{ Value}\"}}";
         }
         public static bool operator ==(NameValue val1, NameValue val2)
         {

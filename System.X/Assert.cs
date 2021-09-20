@@ -10,5 +10,12 @@
         {
             if (condition) throw new ArgumentException(message, paramName);
         }
+        public static void ArgNotEmpty<T>(System.Collections.Generic.IEnumerable<T> source, string paramName, string message)
+        {
+            if (source == null)
+                throw new ArgumentNullException(paramName);
+            if (!System.Linq.Enumerable.Any(source))
+                throw new ArgumentException(message, paramName);
+        }
     }
 }

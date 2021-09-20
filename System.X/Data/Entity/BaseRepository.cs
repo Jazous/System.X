@@ -109,34 +109,36 @@ namespace System.Data.Entity
             return this.db.Set<TEntity>().AsNoTracking().ElementsIn(keySelector, values).ToListAsync();
         }
 
-        protected virtual IOrderedQueryable<TEntity> BuildQuery(IEnumerable<QueryItem> queryItems)
+        IOrderedQueryable<TEntity> BuildQuery(IEnumerable<QueryItem> conditions)
         {
-            var query = db.Set<TEntity>().AsNoTracking().Where(c => !c.IsDeleted);
+            var query = db.Set<TEntity>().AsNoTracking();
 
-            foreach (var item in queryItems)
+            foreach (var item in conditions)
             {
-                if (item.Name.StartsWith("#"))
-                    continue;
-
-                var predicate = X.Linq.ExpressionHelper.Instance.LambdaBuild<TEntity>(item.Name, item.Mode, item.Values);
+                var predicate = item.Name.StartsWith("#") ? BuildCustomQuery(item) : Fn.Expression.LambdaBuild<TEntity>(item.Name, item.Mode, item.Values);
                 if (predicate != null)
                     query = query.Where(predicate);
             }
-            var sorts = queryItems.Where(c => string.Equals(c.Name, "#SortPropertyName", StringComparison.OrdinalIgnoreCase)).ToArray();
+            var sorts = conditions.Where(c => string.Equals(c.Name, "#SortPropertyName", StringComparison.OrdinalIgnoreCase)).ToArray();
             if (sorts.Length == 0)
                 return query.OrderByDescending(c => c.CreateTime);
 
             var sort = sorts[0];
-            var desc = Fn.ToBoolean(sort.Values[0]);
+            bool desc = Fn.ToBoolean(sort.Values[0]) ?? false;
             IOrderedQueryable<TEntity> result = desc ? query.OrderByDescending(sort.Name) : query.OrderBy(sort.Name);
             for (int i = 1; i < sorts.Length; i++)
             {
                 sort = sorts[i];
-                desc = Fn.ToBoolean(sort.Values[i]);
+                desc = Fn.ToBoolean(sort.Values[i]) ?? false;
                 result = desc ? result.ThenByDescending(sort.Name) : result.ThenBy(sort.Name);
             }
             return result;
         }
+        protected virtual Linq.Expressions.Expression<Func<TEntity, bool>> BuildCustomQuery(QueryItem item)
+        {
+            return null;
+        }
+
         public List<TEntity> GetAll()
         {
             return this.db.Set<TEntity>().ToList();
@@ -166,10 +168,10 @@ namespace System.Data.Entity
             var query = BuildQuery(queryItems);
             return (query.Skip(pageIndex * pageSize).Take(pageSize).ToList(), query.Count());
         }
-        public (List<TResult>, int) GetAll<TResult>(IEnumerable<QueryItem> queryItems, int pageIndex, int pageSize, Func<TEntity, TResult> selector)
+        public (List<TResult>, int) GetAll<TResult>(QueryFilter filter, Func<TEntity, TResult> selector)
         {
-            var query = BuildQuery(queryItems);
-            return (query.Skip(pageIndex * pageSize).Take(pageSize).Select(selector).ToList(), query.Count());
+            var query = BuildQuery(filter.Items);
+            return (query.Skip(filter.PageIndex * filter.PageSize).Take(filter.PageSize).Select(selector).ToList(), query.Count());
         }
 
 
@@ -181,14 +183,14 @@ namespace System.Data.Entity
         {
             return this.db.Set<TEntity>().Where(predicate).ToListAsync();
         }
-        public Task<List<TEntity>> GetAllAsync(IEnumerable<QueryItem> queryItems)
+        public Task<List<TEntity>> GetAllAsync(IEnumerable<QueryItem> items)
         {
-            return BuildQuery(queryItems).ToListAsync();
+            return BuildQuery(items).ToListAsync();
         }
-        public async Task<(List<TEntity>, int)> GetAllAsync(IEnumerable<QueryItem> queryItems, int pageIndex, int pageSize)
+        public async Task<(List<TEntity>, int)> GetAllAsync(QueryFilter filter)
         {
-            var query = BuildQuery(queryItems);
-            return (await query.Skip(pageIndex * pageSize).Take(pageSize).ToListAsync(), await query.CountAsync());
+            var query = BuildQuery(filter.Items);
+            return (await query.Skip(filter.PageIndex * filter.PageSize).Take(filter.PageSize).ToListAsync(), await query.CountAsync());
         }
 
 

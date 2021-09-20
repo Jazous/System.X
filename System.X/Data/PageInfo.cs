@@ -2,31 +2,26 @@
 
 namespace System.Data
 {
-    /// <summary>
-    /// 提供列表数据分页信息的类。
-    /// </summary>
     [global::System.Runtime.Serialization.DataContract, global::System.Serializable]
     public struct PageInfo
     {
-        /// <summary>
-        /// 分页数据的页索引值。
-        /// </summary>
         [global::System.Runtime.Serialization.DataMember]
         public int PageIndex { get; set; }
-        /// <summary>
-        /// 分页数据的页面大小。
-        /// </summary>
         [global::System.Runtime.Serialization.DataMember]
         public int PageSize { get; set; }
-        /// <summary>
-        /// 数据记录的总个数。
-        /// </summary>
         [global::System.Runtime.Serialization.DataMember]
         public int TotalCount { get; set; }
 
         public override bool Equals(object obj)
         {
-            return base.Equals(obj);
+            if (obj == null) return false;
+            if (obj is PageInfo)
+                return this.Equals((PageInfo)obj);
+            return false;
+        }
+        public bool Equals(PageInfo pageInfo)
+        {
+            return this.PageIndex == pageInfo.PageIndex && this.PageSize == pageInfo.PageSize && this.TotalCount == pageInfo.TotalCount;
         }
         public override int GetHashCode()
         {
@@ -34,7 +29,7 @@ namespace System.Data
         }
         public override string ToString()
         {
-            return $"{{PageIndex:{ PageIndex},PageSize:{ PageSize},TotalCount:{ TotalCount}}}";
+            return $"{{\"pageIndex\":{ PageIndex},\"pageSize\":{ PageSize},\"totalCount\":{ TotalCount}}}";
         }
     }
 }

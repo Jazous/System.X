@@ -1,10 +1,23 @@
 ﻿
+using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
 
 namespace System
 {
     public static class XExtension
     {
+        private static Microsoft.Extensions.DependencyInjection.ServiceProvider _serviceProvider;
+
+        public static void UseSystemX(this Microsoft.Extensions.DependencyInjection.IServiceCollection services)
+        {
+            services.AddSingleton<X.Linq.ExpressionHelper>();
+            _serviceProvider = services.BuildServiceProvider();
+        }
+        internal static T GetService<T>()
+        {
+            return _serviceProvider.GetService<T>();
+        }
+
         public static bool EqualsIgC(this string source, string value)
         {
             return string.Equals(source, value, StringComparison.OrdinalIgnoreCase);

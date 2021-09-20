@@ -5,34 +5,46 @@ using System.Drawing.Imaging;
 using System.Text;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Linq.Expressions;
 
 namespace System.X.Tests
 {
     class Program
     {
+
         static void Main(string[] args)
         {
-            //IEnumerable<string> dd = new List<string>() { "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "Z" };
+            // System.Linq.Queryable.Contains(values,);
 
+            // var mthods = typeof(System.Linq.Queryable).GetMethods(Reflection.BindingFlags.Static | Reflection.BindingFlags.Public | Reflection.BindingFlags.InvokeMethod).Where(c => c.Name == "Contains");
+            //IEnumerable<string> dd = new List<string>() { "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "Z" };
             List<UserEntity> userList = new List<UserEntity>();
             userList.Add(new UserEntity() { Id = 1, Name = "a", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 1, Name = "超级管理员" } }, Department = new Department() { Id = 1, Name = "研发部", Duty = new DepartmentDuty() { Id = 1 } } });
             userList.Add(new UserEntity() { Id = 2, Name = "b", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = new Department() { Id = 1, Name = "研发部", Duty = new DepartmentDuty() { Id = 1 } } });
             userList.Add(new UserEntity() { Id = 3, Name = "c", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = new Department() { Id = 2, Name = "人事部", Duty = new DepartmentDuty() { Id = 2 } } });
-            userList.Add(new UserEntity() { Id = 4, Name = "d", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = new Department() { Id = 2, Name = "人事部", Duty = new DepartmentDuty() { Id = 3 } } });
+            //userList.Add(new UserEntity() { Id = 4, Name = "d", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = new Department() { Id = 2, Name =null, Duty = new DepartmentDuty() { Id = 3 } } });
             userList.Add(new UserEntity() { Id = 5, Name = "e", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = new Department() { Id = 3, Name = "财务部", Duty = new DepartmentDuty() { Id = 3 } } });
+            userList.Add(new UserEntity() { Id = 6, Name = "f", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = null });
             var query = userList.AsQueryable();
 
-            var predicate = Fn.Expression.Equal<UserEntity>("Department.Duty.Id", "3");
+            var cc7= Expression.Lambda<Func<UserEntity, bool>>(Expression.Constant(true),null);
 
+            var data1 = new string[] { "1", "2", "4" };
+            var data2 = new int[] { 1, 2, 4 };
+            var predicate = Fn.Expression.NotEqual<UserEntity>("Department", null);
+          
+           // var predicate = Fn.Expression.Except<UserEntity>("Id", data1);
 
+           var dd=  userList.AsQueryable().Where(c => !data2.Contains(c.Id));
             var data = query.Where(predicate).ToList();
-
+            var method_contains = typeof(System.Linq.Enumerable).GetMethods(Reflection.BindingFlags.Static | Reflection.BindingFlags.Public | Reflection.BindingFlags.InvokeMethod).FirstOrDefault(c => c.Name == "Contains" && c.GetParameters().Length == 2);
             //dd.Contains("z", true);
-            //var watch = new Diagnostics.Stopwatch();
-            //watch.Start();
-            //dd.Contains("z", true);
-            //watch.Stop();
-            //Console.WriteLine(watch.ElapsedTicks);
+            var watch = new Diagnostics.Stopwatch();
+            dynamic cc = 3;
+            watch.Start();
+            var c= method_contains.MakeGenericMethod(typeof(UserEntity));
+            watch.Stop();
+            Console.WriteLine(watch.ElapsedTicks);
         }
     }
     public class Base32Encoding

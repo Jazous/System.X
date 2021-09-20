@@ -5,6 +5,12 @@ namespace System.Linq
 {
     public static class XLinqExtension
     {
+        public static IQueryable<T> WhereIf<T>(this IQueryable<T> source, bool condition, Expression<Func<T, bool>> predicate)
+        {
+            if (condition == false)
+                return source;
+            return Queryable.Where(source, predicate);
+        }
         public static IOrderedQueryable<T> OrderBy<T>(this IQueryable<T> source, string propertyName)
         {
             dynamic keySelector = GetKeySelector<T>(propertyName);

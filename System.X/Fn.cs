@@ -47,28 +47,34 @@ namespace System
 
         }
 
-        public static bool ToBoolean(string value)
+        public static bool? ToBoolean(string value)
         {
             switch (value)
             {
-                case null:
-                case "":
                 case "0":
+                case "否":
                 case "false":
                 case "False":
                 case "FALSE": return false;
                 case "1":
+                case "是":
                 case "true":
                 case "True":
                 case "TRUE": return true;
                 default: break;
             }
             bool result;
-            return bool.TryParse(value, out result) ? result : false;
+            if (bool.TryParse(value, out result))
+                return result;
+            return null;
         }
         public static int? ToInt32(string value)
         {
             return XExtension.ToInt32(value);
+        }
+        public static int? ToInt32(object value)
+        {
+            return ToInt32(string.Concat(value));
         }
         public static decimal? ToDecimal(string value)
         {
@@ -304,6 +310,18 @@ namespace System
             var desc = (System.ComponentModel.DescriptionAttribute)member.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false).FirstOrDefault();
             return desc == null ? null : desc.Description;
         }
+        public static string GetDisplayName<TSource>(Linq.Expressions.Expression<Func<TSource, dynamic>> memberSelector)
+        {
+            return GetAttributes<TSource, System.ComponentModel.DisplayNameAttribute>(memberSelector, false).FirstOrDefault()?.DisplayName;
+        }
+        public static string GetDisplayName<TSource>(string memberName)
+        {
+            var member = typeof(TSource).GetMember(memberName).FirstOrDefault();
+            if (member == null) return null;
+
+            var desc = (System.ComponentModel.DisplayNameAttribute)member.GetCustomAttributes(typeof(System.ComponentModel.DisplayNameAttribute), false).FirstOrDefault();
+            return desc == null ? null : desc.DisplayName;
+        }
         public static TAttribute[] GetAttributes<TSource, TAttribute>(Linq.Expressions.Expression<Func<TSource, dynamic>> memberSelector, bool inherit) where TAttribute : Attribute
         {
             var member = (Linq.Expressions.MemberExpression)memberSelector.Body;
@@ -326,7 +344,7 @@ namespace System
             Directory.CreateDirectory(tempDir);
             return tempDir;
         }
-        public static string NewFilePath(string extension = ".tmp")
+        public static string NewFile(string extension = ".tmp")
         {
             return TempDir + Guid.NewGuid().ToString("N") + extension;
         }
