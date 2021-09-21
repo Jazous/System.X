@@ -3,7 +3,7 @@
 namespace System.Data
 {
     [global::System.Runtime.Serialization.DataContract, global::System.Serializable]
-    public struct PageInfo
+    public struct PageInfo : IEquatable<PageInfo>
     {
         [global::System.Runtime.Serialization.DataMember]
         public int PageIndex { get; set; }
@@ -19,9 +19,9 @@ namespace System.Data
                 return this.Equals((PageInfo)obj);
             return false;
         }
-        public bool Equals(PageInfo pageInfo)
+        public bool Equals(PageInfo other)
         {
-            return this.PageIndex == pageInfo.PageIndex && this.PageSize == pageInfo.PageSize && this.TotalCount == pageInfo.TotalCount;
+            return this.PageIndex == other.PageIndex && this.PageSize == other.PageSize && this.TotalCount == other.TotalCount;
         }
         public override int GetHashCode()
         {
@@ -29,7 +29,7 @@ namespace System.Data
         }
         public override string ToString()
         {
-            return $"{{\"pageIndex\":{ PageIndex},\"pageSize\":{ PageSize},\"totalCount\":{ TotalCount}}}";
+            return $"{{\"PageIndex\":{ PageIndex},\"PageSize\":{ PageSize},\"TotalCount\":{ TotalCount}}}";
         }
     }
 }

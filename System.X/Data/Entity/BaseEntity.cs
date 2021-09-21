@@ -1,8 +1,15 @@
-﻿namespace System.Data.Entity
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace System.Data.Entity
 {
-    public class BaseEntity
+    public abstract class BaseEntity : IEntity
     {
-        public bool IsDeleted { get; set; }
         public DateTime CreateTime { get; set; }
+    }
+    public abstract class BaseEntity<T> : BaseEntity, IEntity
+    {
+        public T Id { get; set; }
     }
 }

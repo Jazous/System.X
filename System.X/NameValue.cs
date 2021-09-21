@@ -7,7 +7,7 @@ namespace System
     /// 表示 System.String 键和 System.String 值的结构。
     /// </summary>
     [global::System.Serializable, global::System.Runtime.Serialization.DataContract, global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public struct NameValue
+    public struct NameValue : IEquatable<NameValue>
     {
         /// <summary>
         /// 获取键/值对中的键。
@@ -34,9 +34,9 @@ namespace System
                 return Equals((NameValue)obj);
             return false;
         }
-        public bool Equals(NameValue nv)
+        public bool Equals(NameValue other)
         {
-            return nv.Name == this.Name && nv.Value == this.Value;
+            return other.Name == this.Name && other.Value == this.Value;
         }
         public override int GetHashCode()
         {
@@ -48,23 +48,7 @@ namespace System
         }
         public override string ToString()
         {
-            return $"{{\"name\":\"{ Name}\",\"value\":\"{ Value}\"}}";
-        }
-        public static bool operator ==(NameValue val1, NameValue val2)
-        {
-            return val1.Name == val2.Name && val1.Value == val2.Value;
-        }
-        public static bool operator !=(NameValue val1, NameValue val2)
-        {
-            return (val1.Name != val2.Name) || (val1.Value != val2.Value);
-        }
-        public static implicit operator NameValue(System.Collections.Generic.KeyValuePair<string, string> value)
-        {
-            return new NameValue(value.Key, value.Value);
-        }
-        public static implicit operator System.Collections.Generic.KeyValuePair<string, string>(NameValue value)
-        {
-            return new KeyValuePair<string, string>(value.Name, value.Value);
+            return $"{{\"Name\":\"{ Name}\",\"Value\":\"{ Value}\"}}";
         }
     }
 }

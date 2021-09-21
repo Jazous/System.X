@@ -16,16 +16,6 @@ namespace System.Data
         /// NotEqual
         /// </summary>
         NotEqual,
-        [Newtonsoft.Json.JsonProperty("nu")]
-        /// <summary>
-        /// IsNull
-        /// </summary>
-        IsNull,
-        [Newtonsoft.Json.JsonProperty("ntnu")]
-        /// <summary>
-        /// IsNotNull
-        /// </summary>
-        IsNotNull,
         [Newtonsoft.Json.JsonProperty("sw")]
         /// <summary>
         /// StartWith

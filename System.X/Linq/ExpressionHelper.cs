@@ -11,141 +11,187 @@ namespace System.X.Linq
     {
         internal static readonly ExpressionHelper Instance = new ExpressionHelper();
         static readonly Reflection.MethodInfo _contains = typeof(System.Linq.Enumerable).GetMethods(Reflection.BindingFlags.Static | Reflection.BindingFlags.Public | Reflection.BindingFlags.InvokeMethod).FirstOrDefault(c => c.Name == "Contains" && c.GetParameters().Length == 2);
+        static readonly Reflection.MethodInfo _string_contains = typeof(string).GetMethod("Contains", new[] { typeof(string) });
+        static readonly Reflection.MethodInfo _string_startwith = typeof(string).GetMethod("StartWith", new[] { typeof(string) });
+        static readonly Reflection.MethodInfo _string_endwith = typeof(string).GetMethod("EndWith", new[] { typeof(string) });
+
         ExpressionHelper() { }
 
-        public Expression<Func<TSource, bool>> LambdaBuild<TSource>(string propertyName, QueryMode mode, params dynamic[] values)
+        public Expression<Func<T, bool>> Lambda<T>(string propertyName, QueryMode mode, params dynamic[] values)
         {
-            if (mode != QueryMode.IsNull && mode != QueryMode.IsNotNull && (values == null || !values.Any()))
-                return null;
-
             switch (mode)
             {
-                case QueryMode.Equal: return Equal<TSource>(propertyName, values);
-                case QueryMode.NotEqual: return NotEqual<TSource>(propertyName, values);
-                case QueryMode.GreaterThan: return GreaterThan<TSource>(propertyName, values[0]);
-                case QueryMode.GreaterThanOrEqual: return GreaterThanOrEqual<TSource>(propertyName, values[0]);
-                case QueryMode.LessThan: return LessThan<TSource>(propertyName, values[0]);
-                case QueryMode.LessThanOrEqual: return LessThanOrEqual<TSource>(propertyName, values[0]);
-                case QueryMode.Like: return Contains<TSource>(propertyName, values[0]);
-                case QueryMode.StartWith: return StartWith<TSource>(propertyName, values[0]);
-                case QueryMode.EndWith: return EndWith<TSource>(propertyName, values[0]);
-                case QueryMode.NotIn: return Except<TSource>(propertyName, values);
-                case QueryMode.In: return ElementsIn<TSource>(propertyName, values);
-                case QueryMode.IsNull: return Equal<TSource>(propertyName, null);
-                case QueryMode.IsNotNull: return NotEqual<TSource>(propertyName, null);
+                case QueryMode.Equal: return Equal<T>(propertyName, values);
+                case QueryMode.NotEqual: return NotEqual<T>(propertyName, values);
+                case QueryMode.GreaterThan: return GreaterThan<T>(propertyName, values[0]);
+                case QueryMode.GreaterThanOrEqual: return GreaterThanOrEqual<T>(propertyName, values[0]);
+                case QueryMode.LessThan: return LessThan<T>(propertyName, values[0]);
+                case QueryMode.LessThanOrEqual: return LessThanOrEqual<T>(propertyName, values[0]);
+                case QueryMode.Like: return Contains<T>(propertyName, values);
+                case QueryMode.StartWith: return StartWith<T>(propertyName, values);
+                case QueryMode.EndWith: return EndWith<T>(propertyName, values);
+                case QueryMode.NotIn: return Except<T>(propertyName, values);
+                case QueryMode.In: return Include<T>(propertyName, values);
             }
             return null;
         }
 
-        public Expression<Func<TSource, bool>> Equal<TSource>(string propertyName, params dynamic[] values)
+        public Expression<Func<T, bool>> Equal<T>(string propertyName, params dynamic[] values)
         {
-            var prop = LambdaProperty<TSource>(propertyName);
+            var prop = LambdaProperty<T>(propertyName);
 
-            if (values == null || values.Length == 0)
-            {
-                var equal = Expression.Equal(prop.Body, Expression.Constant(null, prop.ReturnType));
-                return Expression.Lambda<Func<TSource, bool>>(equal, prop.Parameters);
-            }
-          
-            var equals = values.Select(value => Expression.Equal(prop.Body, value == null ? Expression.Constant(null, prop.ReturnType) : Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType))).ToArray();
-            if (equals.Length == 1)
-                return Expression.Lambda<Func<TSource, bool>>(equals[0], prop.Parameters);
+            if (values == null)
+                return Expression.Lambda<Func<T, bool>>(Expression.Equal(prop.Body, Expression.Constant(null, prop.ReturnType)), prop.Parameters);
 
-            var body = equals.Aggregate((accumulate, equal) => Expression.Or(accumulate, equal));
-            return Expression.Lambda<Func<TSource, bool>>(body, prop.Parameters);
-        }
-        public Expression<Func<TSource, bool>> NotEqual<TSource>(string propertyName,params dynamic[] values)
-        {
-            var prop = LambdaProperty<TSource>(propertyName);
-
-            if (values == null || values.Length == 0)
-            {
-                var equal = Expression.NotEqual(prop.Body, Expression.Constant(null, prop.ReturnType));
-                return Expression.Lambda<Func<TSource, bool>>(equal, prop.Parameters);
-            }
-
-            var equals = values.Select(value => Expression.NotEqual(prop.Body, value == null ? Expression.Constant(null, prop.ReturnType) : Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType))).ToArray();
-            if (equals.Length == 1)
-                return Expression.Lambda<Func<TSource, bool>>(equals[0], prop.Parameters);
-
-            var body = equals.Aggregate((accumulate, equal) => Expression.AndAlso(accumulate, equal));
-            return Expression.Lambda<Func<TSource, bool>>(body, prop.Parameters);
-        }
-        public Expression<Func<TSource, bool>> GreaterThan<TSource>(string propertyName, dynamic value)
-        {
-            var prop = LambdaProperty<TSource>(propertyName);
-            var body = Expression.GreaterThan(prop.Body, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType));
-            return Expression.Lambda<Func<TSource, bool>>(body, prop.Parameters);
-        }
-        public Expression<Func<TSource, bool>> GreaterThanOrEqual<TSource>(string propertyName, dynamic value)
-        {
-            var prop = LambdaProperty<TSource>(propertyName);
-            var body = Expression.GreaterThanOrEqual(prop.Body, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType));
-            return Expression.Lambda<Func<TSource, bool>>(body, prop.Parameters);
-        }
-        public Expression<Func<TSource, bool>> LessThan<TSource>(string propertyName, dynamic value)
-        {
-            var prop = LambdaProperty<TSource>(propertyName);
-            var body = Expression.LessThan(prop.Body, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType));
-            return Expression.Lambda<Func<TSource, bool>>(body, prop.Parameters);
-        }
-        public Expression<Func<TSource, bool>> LessThanOrEqual<TSource>(string propertyName, dynamic value)
-        {
-            var prop = LambdaProperty<TSource>(propertyName);
-            var body = Expression.LessThanOrEqual(prop.Body, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType));
-            return Expression.Lambda<Func<TSource, bool>>(body, prop.Parameters);
-        }
-        public Expression<Func<TSource, bool>> Between<TSource, TKey>(string propertyName, TKey val1, TKey val2)
-        {
-            if (val1.Equals(val2))
-                return Equal<TSource>(propertyName, val1);
-
-            var prop = LambdaProperty<TSource>(propertyName);
-            var cstart = Expression.GreaterThanOrEqual(prop.Body, Expression.Constant(Convert.ChangeType(val1, prop.ReturnType), prop.ReturnType));
-            var cend = Expression.LessThan(prop.Body, Expression.Constant(Convert.ChangeType(val2, prop.ReturnType), prop.ReturnType));
-            return Expression.Lambda<Func<TSource, bool>>(Expression.AndAlso(cstart, cend), prop.Parameters);
-        }
-        public Expression<Func<TSource, bool>> ElementsIn<TSource>(string propertyName, params dynamic[] values)
-        {
-            if (values == null || values.Length == 0)
+            if (values.Length == 0)
                 return c => false;
 
             if (values.Length == 1)
-                return Equal<TSource>(propertyName, values[0]);
+                return Expression.Lambda<Func<T, bool>>(Expression.Equal(prop.Body, Expression.Constant(Convert.ChangeType(values[0], prop.ReturnType), prop.ReturnType)), prop.Parameters);
 
-            var prop = LambdaProperty<TSource>(propertyName);
-            var body = Expression.Call(null, _contains.MakeGenericMethod(prop.ReturnType), Constant(values, prop.ReturnType), prop.Body);
-            return Expression.Lambda<Func<TSource, bool>>(body, prop.Parameters);
+            var equals = values.Select(value => Expression.Equal(prop.Body, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType))).ToArray();
+            var body = equals.Aggregate((accumulate, equal) => Expression.Or(accumulate, equal));
+            return Expression.Lambda<Func<T, bool>>(body, prop.Parameters);
         }
-        public Expression<Func<TSource, bool>> Except<TSource>(string propertyName, params dynamic[] values)
+        public Expression<Func<T, bool>> NotEqual<T>(string propertyName, params dynamic[] values)
         {
+            var prop = LambdaProperty<T>(propertyName);
+
+            if (values == null)
+                return Expression.Lambda<Func<T, bool>>(Expression.NotEqual(prop.Body, Expression.Constant(null, prop.ReturnType)), prop.Parameters);
+
+            if (values.Length == 0)
+                return c => false;
+
             if (values.Length == 1)
-                return NotEqual<TSource>(propertyName, values[0]);
+                return Expression.Lambda<Func<T, bool>>(Expression.NotEqual(prop.Body, Expression.Constant(Convert.ChangeType(values[0], prop.ReturnType), prop.ReturnType)), prop.Parameters);
 
-            var prop = LambdaProperty<TSource>(propertyName);
+            var equals = values.Select(value => Expression.NotEqual(prop.Body, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType))).ToArray();
+            var body = equals.Aggregate((accumulate, equal) => Expression.AndAlso(accumulate, equal));
+            return Expression.Lambda<Func<T, bool>>(body, prop.Parameters);
+        }
+        public Expression<Func<T, bool>> GreaterThan<T>(string propertyName, dynamic value)
+        {
+            var prop = LambdaProperty<T>(propertyName);
+            var body = Expression.GreaterThan(prop.Body, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType));
+            return Expression.Lambda<Func<T, bool>>(body, prop.Parameters);
+        }
+        public Expression<Func<T, bool>> GreaterThanOrEqual<T>(string propertyName, dynamic value)
+        {
+            var prop = LambdaProperty<T>(propertyName);
+            var body = Expression.GreaterThanOrEqual(prop.Body, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType));
+            return Expression.Lambda<Func<T, bool>>(body, prop.Parameters);
+        }
+        public Expression<Func<T, bool>> LessThan<T>(string propertyName, dynamic value)
+        {
+            var prop = LambdaProperty<T>(propertyName);
+            var body = Expression.LessThan(prop.Body, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType));
+            return Expression.Lambda<Func<T, bool>>(body, prop.Parameters);
+        }
+        public Expression<Func<T, bool>> LessThanOrEqual<T>(string propertyName, dynamic value)
+        {
+            var prop = LambdaProperty<T>(propertyName);
+            var body = Expression.LessThanOrEqual(prop.Body, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType));
+            return Expression.Lambda<Func<T, bool>>(body, prop.Parameters);
+        }
+        public Expression<Func<T, bool>> Between<T>(string propertyName, dynamic val1, dynamic val2)
+        {
+            if (val1 == val2)
+                return Equal<T>(propertyName, val1);
+
+            var prop = LambdaProperty<T>(propertyName);
+            var cstart = Expression.GreaterThanOrEqual(prop.Body, Expression.Constant(Convert.ChangeType(val1, prop.ReturnType), prop.ReturnType));
+            var cend = Expression.LessThan(prop.Body, Expression.Constant(Convert.ChangeType(val2, prop.ReturnType), prop.ReturnType));
+            return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(cstart, cend), prop.Parameters);
+        }
+        public Expression<Func<T, bool>> Include<T>(string propertyName, params dynamic[] values)
+        {
+            var prop = LambdaProperty<T>(propertyName);
+
+            if (values == null)
+                return Expression.Lambda<Func<T, bool>>(Expression.Equal(prop.Body, Expression.Constant(null, prop.ReturnType)), prop.Parameters);
+
+            if (values.Length == 0)
+                return c => false;
+
+            if (values.Length == 1)
+                return Expression.Lambda<Func<T, bool>>(Expression.Equal(prop.Body, Expression.Constant(values[0], prop.ReturnType)), prop.Parameters);
+
             var body = Expression.Call(null, _contains.MakeGenericMethod(prop.ReturnType), Constant(values, prop.ReturnType), prop.Body);
-            return Expression.Lambda<Func<TSource, bool>>(Expression.Not(body), prop.Parameters);
+            return Expression.Lambda<Func<T, bool>>(body, prop.Parameters);
         }
-        public Expression<Func<TSource, bool>> Contains<TSource>(string propertyName, string value)
+        public Expression<Func<T, bool>> Except<T>(string propertyName, params dynamic[] values)
         {
-            var prop = LambdaProperty<TSource>(propertyName);
-            var method = typeof(string).GetMethod("Contains", new[] { typeof(string) });
-            var body = Expression.Call(prop.Body, method, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType));
-            return Expression.Lambda<Func<TSource, bool>>(body, prop.Parameters);
+            var prop = LambdaProperty<T>(propertyName);
+
+            if (values == null)
+                return Expression.Lambda<Func<T, bool>>(Expression.NotEqual(prop.Body, Expression.Constant(null, prop.ReturnType)), prop.Parameters);
+
+            if (values.Length == 0)
+                return c => false;
+
+            if (values.Length == 1)
+                return Expression.Lambda<Func<T, bool>>(Expression.NotEqual(prop.Body, Expression.Constant(values[0], prop.ReturnType)), prop.Parameters);
+
+            var body = Expression.Call(null, _contains.MakeGenericMethod(prop.ReturnType), Constant(values, prop.ReturnType), prop.Body);
+            return Expression.Lambda<Func<T, bool>>(Expression.Not(body), prop.Parameters);
         }
-        public Expression<Func<TSource, bool>> StartWith<TSource>(string propertyName, string value)
+        public Expression<Func<T, bool>> Contains<T>(string propertyName, params dynamic[] values)
         {
-            var prop = LambdaProperty<TSource>(propertyName);
-            var method = typeof(string).GetMethod("StartWith", new[] { typeof(string) });
-            var body = Expression.Call(prop.Body, method, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType));
-            return Expression.Lambda<Func<TSource, bool>>(body, prop.Parameters);
+            var prop = LambdaProperty<T>(propertyName);
+
+            if (values == null)
+                return Expression.Lambda<Func<T, bool>>(Expression.Equal(prop.Body, Expression.Constant(null, prop.ReturnType)), prop.Parameters);
+
+            if (values.Length == 0)
+                return c => false;
+
+            if (values.Length == 1)
+                return Expression.Lambda<Func<T, bool>>(Expression.Call(prop.Body, _string_contains, Expression.Constant(Convert.ChangeType(values[0], prop.ReturnType), prop.ReturnType)), prop.Parameters);
+
+            var calls = values.Select(value => Expression.Call(prop.Body, _string_contains, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType))).ToArray();
+            var body = Expression.Or(calls[0], calls[1]);
+            for (int i = 2; i < calls.Length; i++)
+                body = Expression.Or(body, calls[i]);
+            return Expression.Lambda<Func<T, bool>>(body, prop.Parameters);
         }
-        public Expression<Func<TSource, bool>> EndWith<TSource>(string propertyName, string value)
+        public Expression<Func<T, bool>> StartWith<T>(string propertyName, params dynamic[] values)
         {
-            var prop = LambdaProperty<TSource>(propertyName);
-            var method = typeof(string).GetMethod("EndWith", new[] { typeof(string) });
-            var body = Expression.Call(prop.Body, method, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType));
-            return Expression.Lambda<Func<TSource, bool>>(body, prop.Parameters);
+            var prop = LambdaProperty<T>(propertyName);
+
+            if (values == null)
+                return Expression.Lambda<Func<T, bool>>(Expression.Equal(prop.Body, Expression.Constant(null, prop.ReturnType)), prop.Parameters);
+
+            if (values.Length == 0)
+                return c => false;
+
+            if (values.Length == 1)
+                return Expression.Lambda<Func<T, bool>>(Expression.Call(prop.Body, _string_startwith, Expression.Constant(Convert.ChangeType(values[0], prop.ReturnType), prop.ReturnType)), prop.Parameters);
+
+            var calls = values.Select(value => Expression.Call(prop.Body, _string_startwith, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType))).ToArray();
+            var body = Expression.Or(calls[0], calls[1]);
+            for (int i = 2; i < calls.Length; i++)
+                body = Expression.Or(body, calls[i]);
+            return Expression.Lambda<Func<T, bool>>(body, prop.Parameters);
+        }
+        public Expression<Func<T, bool>> EndWith<T>(string propertyName, params dynamic[] values)
+        {
+            var prop = LambdaProperty<T>(propertyName);
+
+            if (values == null)
+                return Expression.Lambda<Func<T, bool>>(Expression.Equal(prop.Body, Expression.Constant(null, prop.ReturnType)), prop.Parameters);
+
+            if (values.Length == 0)
+                return c => false;
+
+            if (values.Length == 1)
+                return Expression.Lambda<Func<T, bool>>(Expression.Call(prop.Body, _string_endwith, Expression.Constant(Convert.ChangeType(values[0], prop.ReturnType), prop.ReturnType)), prop.Parameters);
+
+            var calls = values.Select(value => Expression.Call(prop.Body, _string_endwith, Expression.Constant(Convert.ChangeType(value, prop.ReturnType), prop.ReturnType))).ToArray();
+            var body = Expression.Or(calls[0], calls[1]);
+            for (int i = 2; i < calls.Length; i++)
+                body = Expression.Or(body, calls[i]);
+            return Expression.Lambda<Func<T, bool>>(body, prop.Parameters);
         }
         public LambdaExpression LambdaProperty<T>(string propertyName)
         {
@@ -183,30 +229,56 @@ namespace System.X.Linq
             return Property(prop, propertyName.Substring(index + 1));
         }
 
-        ConstantExpression Constant<T>(T[] values, Type type)
+        public ConstantExpression Constant<T>(T[] values, Type conversionType)
         {
-            if (type == typeof(int))
+            if (conversionType == null)
+                return Expression.Constant(values, typeof(T[]));
+
+            if (values == null)
+                return Expression.Constant(null, conversionType);
+
+            if (conversionType == typeof(int))
                 return Expression.Constant(Array.ConvertAll(values, value => Convert.ToInt32(value)));
-            else if (type == typeof(string))
+            if (conversionType == typeof(int?))
+                return Expression.Constant(Array.ConvertAll(values, value => value == null ? null : (int?)Convert.ToInt32(value)));
+            if (conversionType == typeof(string))
                 return Expression.Constant(Array.ConvertAll(values, value => Convert.ToString(value)));
-            if (type == typeof(bool))
+            if (conversionType == typeof(bool))
                 return Expression.Constant(Array.ConvertAll(values, value => Convert.ToBoolean(value)));
-            if (type == typeof(DateTime))
+            if (conversionType == typeof(bool?))
+                return Expression.Constant(Array.ConvertAll(values, value => value == null ? null : (bool?)Convert.ToBoolean(value)));
+            if (conversionType == typeof(DateTime))
                 return Expression.Constant(Array.ConvertAll(values, value => Convert.ToDateTime(value)));
-            else if (type == typeof(long))
+            if (conversionType == typeof(DateTime?))
+                return Expression.Constant(Array.ConvertAll(values, value => value == null ? null : (DateTime?)Convert.ToDateTime(value)));
+            if (conversionType == typeof(long))
                 return Expression.Constant(Array.ConvertAll(values, value => Convert.ToInt64(value)));
-            else if (type == typeof(decimal))
+            if (conversionType == typeof(long?))
+                return Expression.Constant(Array.ConvertAll(values, value => value == null ? null : (long?)Convert.ToInt64(value)));
+            if (conversionType == typeof(decimal))
                 return Expression.Constant(Array.ConvertAll(values, value => Convert.ToDecimal(value)));
-            else if (type == typeof(short))
+            if (conversionType == typeof(decimal?))
+                return Expression.Constant(Array.ConvertAll(values, value => value == null ? null : (decimal?)Convert.ToDecimal(value)));
+
+            if (conversionType == typeof(short))
                 return Expression.Constant(Array.ConvertAll(values, value => Convert.ToInt16(value)));
-            else if (type == typeof(float))
+            if (conversionType == typeof(float))
                 return Expression.Constant(Array.ConvertAll(values, value => Convert.ToSingle(value)));
-            else if (type == typeof(double))
+            if (conversionType == typeof(double))
                 return Expression.Constant(Array.ConvertAll(values, value => Convert.ToDouble(value)));
-            else if (type == typeof(byte))
+            if (conversionType == typeof(byte))
                 return Expression.Constant(Array.ConvertAll(values, value => Convert.ToByte(value)));
-            else
-                return Expression.Constant(Array.ConvertAll(values, value => Convert.ChangeType(value, type)));
+
+            if (conversionType == typeof(short?))
+                return Expression.Constant(Array.ConvertAll(values, value => value == null ? null : (short?)Convert.ToInt16(value)));
+            if (conversionType == typeof(float?))
+                return Expression.Constant(Array.ConvertAll(values, value => value == null ? null : (float?)Convert.ToSingle(value)));
+            if (conversionType == typeof(double?))
+                return Expression.Constant(Array.ConvertAll(values, value => value == null ? null : (double?)Convert.ToDouble(value)));
+            if (conversionType == typeof(byte?))
+                return Expression.Constant(Array.ConvertAll(values, value => value == null ? null : (byte?)Convert.ToByte(value)));
+
+            return Expression.Constant(Array.ConvertAll(values, value => Convert.ChangeType(value, conversionType)));
         }
     }
 }

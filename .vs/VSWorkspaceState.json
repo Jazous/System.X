@@ -2,7 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\System.X",
-    "\\System.X.Tests"
+    "\\System.X.Tests",
+    "\\System.X\\Linq"
   ],
+  "SelectedNode": "\\System.X.sln",
   "PreviewInSolutionExplorer": false
 }

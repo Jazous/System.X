@@ -10,173 +10,149 @@ namespace System.X.Cryptography
         readonly byte[] rgbIV = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
         readonly byte[] aesIV = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
 
-        byte[] GetTransformBytes(byte[] buffer, global::System.Security.Cryptography.ICryptoTransform transform)
-        {
-            using (transform)
-            using (var ms = new global::System.IO.MemoryStream())
-            using (var cs = new global::System.Security.Cryptography.CryptoStream(ms, transform, global::System.Security.Cryptography.CryptoStreamMode.Write))
-            {
-                cs.Write(buffer, 0, buffer.Length);
-                cs.FlushFinalBlock();
-                return ms.ToArray();
-            }
-        }
-        byte[] Encrypt(byte[] value, byte[] rgbKey, byte[] rgbIV, Security.Cryptography.SymmetricAlgorithm provider)
-        {
-            return GetTransformBytes(value, provider.CreateEncryptor(rgbKey, rgbIV));
-        }
-        byte[] Decrypt(byte[] value, byte[] rgbKey, byte[] rgbIV, Security.Cryptography.SymmetricAlgorithm provider)
-        {
-            return GetTransformBytes(value, provider.CreateDecryptor(rgbKey, rgbIV));
-        }
-
-        //对称加解密 DES、IDEA、RC2、RC4、SKIPJACK、RC5、AES
         public byte[] DES(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
-            return Encrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.DESCryptoServiceProvider());
+            return Encrypt("DES", value, rgbKey, rgbIV);
         }
-        public string DES(string value, byte[] rgbKey, byte[] rgbIV)
+        public string DES(string value, string rgbKey, string rgbIV)
         {
-            return global::System.Convert.ToBase64String(DES(global::System.Text.Encoding.UTF8.GetBytes(value), rgbKey, rgbIV));
+            return Encrypt("DES", value, rgbKey, rgbIV);
         }
         public byte[] DESDecrypt(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
-            return Decrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.DESCryptoServiceProvider());
+            return Decrypt("DES", value, rgbKey, rgbIV);
         }
-        public string DESDecrypt(string value, byte[] rgbKey, byte[] rgbIV)
+        public string DESDecrypt(string value, string rgbKey, string rgbIV)
         {
-            byte[] buffer = global::System.Convert.FromBase64String(value);
-            return global::System.Text.Encoding.UTF8.GetString(DESDecrypt(buffer, rgbKey, rgbIV));
+            return Decrypt("DES", value, rgbKey, rgbIV);
         }
 
         public byte[] TripleDES(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
-            return Encrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.TripleDESCryptoServiceProvider());
+            return Encrypt("TripleDES", value, rgbKey, rgbIV);
         }
-        public string TripleDES(string value, byte[] rgbKey, byte[] rgbIV)
+        public string TripleDES(string value, string rgbKey, string rgbIV)
         {
-            return global::System.Convert.ToBase64String(TripleDES(global::System.Text.Encoding.UTF8.GetBytes(value), rgbKey, rgbIV));
+            return Encrypt("TripleDES", value, rgbKey, rgbIV);
         }
         public byte[] TripleDESDecrypt(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
-            return Decrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.TripleDESCryptoServiceProvider());
+            return Decrypt("TripleDES", value, rgbKey, rgbIV);
         }
-        public string TripleDESDecrypt(string value, byte[] rgbKey, byte[] rgbIV)
+        public string TripleDESDecrypt(string value, string rgbKey, string rgbIV)
         {
-            byte[] buffer = global::System.Convert.FromBase64String(value);
-            return global::System.Text.Encoding.UTF8.GetString(TripleDESDecrypt(buffer, rgbKey, rgbIV));
+            return Decrypt("TripleDES", value, rgbKey, rgbIV);
         }
 
         public byte[] AES(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
-            return Encrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.AesCryptoServiceProvider());
+            return Encrypt("Aes", value, rgbKey, rgbIV);
         }
-        public string AES(string value, byte[] rgbKey, byte[] rgbIV)
+        public string AES(string value, string rgbKey, string rgbIV)
         {
-            return global::System.Convert.ToBase64String(AES(global::System.Text.Encoding.UTF8.GetBytes(value), rgbKey, rgbIV));
+            return Encrypt("Aes", value, rgbKey, rgbIV);
         }
         public byte[] AESDecrypt(byte[] value, byte[] rgbKey, byte[] rgbIV)
         {
-            return Decrypt(value, rgbKey, rgbIV, new global::System.Security.Cryptography.AesCryptoServiceProvider());
+            return Decrypt("Aes", value, rgbKey, rgbIV);
         }
-        public string AESDecrypt(string value, byte[] rgbKey, byte[] rgbIV)
+        public string AESDecrypt(string value, string rgbKey, string rgbIV)
         {
-            byte[] buffer = global::System.Convert.FromBase64String(value);
-            return global::System.Text.Encoding.UTF8.GetString(AESDecrypt(buffer, rgbKey, rgbIV));
+            return Decrypt("Aes", value, rgbKey, rgbIV);
         }
 
-        //public byte[] Encrypt(System.X.Enums.SymAlgs algorithm, byte[] bytes, byte[] rgbKey, byte[] rgbIV)
-        //{
-        //    using (var provider = Security.Cryptography.SymmetricAlgorithm.Create(algorithm.ToString()))
-        //    using (var transform = provider.CreateEncryptor(rgbKey, rgbIV))
-        //    using (var ms = new global::System.IO.MemoryStream())
-        //    using (var cs = new global::System.Security.Cryptography.CryptoStream(ms, transform, global::System.Security.Cryptography.CryptoStreamMode.Write))
-        //    {
-        //        cs.Write(bytes, 0, bytes.Length);
-        //        cs.FlushFinalBlock();
-        //        return ms.ToArray();
-        //    }
-        //}
-        //public byte[] Decrypt(System.X.Enums.SymAlgs algorithm, byte[] bytes, byte[] rgbKey, byte[] rgbIV)
-        //{
-        //    using (var provider = Security.Cryptography.SymmetricAlgorithm.Create(algorithm.ToString()))
-        //    using (var transform = provider.CreateDecryptor(rgbKey, rgbIV))
-        //    using (var ms = new global::System.IO.MemoryStream())
-        //    using (var cs = new global::System.Security.Cryptography.CryptoStream(ms, transform, global::System.Security.Cryptography.CryptoStreamMode.Write))
-        //    {
-        //        cs.Write(bytes, 0, bytes.Length);
-        //        cs.FlushFinalBlock();
-        //        return ms.ToArray();
-        //    }
-        //}
-        //public string Encrypt(System.X.Enums.SymAlgs algorithm, string value, string rgbKey, string rgbIV)
-        //{
-        //    byte[] buffer = System.Text.Encoding.UTF8.GetBytes(value);
-        //    byte[] rgbKeyArray = System.Text.Encoding.UTF8.GetBytes(rgbKey);
-        //    byte[] rgbIVArray = System.Text.Encoding.UTF8.GetBytes(rgbIV);
-        //    return global::System.Convert.ToBase64String(Encrypt(algorithm, buffer, rgbKeyArray, rgbIVArray));
-        //}
-        //public string Decrypt(System.X.Enums.SymAlgs algorithm, string value, string rgbKey, string rgbIV)
-        //{
-        //    byte[] buffer = global::System.Convert.FromBase64String(value);
-        //    byte[] rgbKeyArray = System.Text.Encoding.UTF8.GetBytes(rgbKey);
-        //    byte[] rgbIVArray = System.Text.Encoding.UTF8.GetBytes(rgbIV);
-        //    return System.Text.Encoding.UTF8.GetString(Decrypt(algorithm, buffer, rgbKeyArray, rgbIVArray));
-        //}
+        byte[] Encrypt(string algName, byte[] bytes, byte[] rgbKey, byte[] rgbIV)
+        {
+            using (var provider = Security.Cryptography.SymmetricAlgorithm.Create(algName))
+            using (var transform = provider.CreateEncryptor(rgbKey, rgbIV))
+            using (var ms = new global::System.IO.MemoryStream())
+            using (var cs = new global::System.Security.Cryptography.CryptoStream(ms, transform, global::System.Security.Cryptography.CryptoStreamMode.Write))
+            {
+                cs.Write(bytes, 0, bytes.Length);
+                cs.FlushFinalBlock();
+                return ms.ToArray();
+            }
+        }
+        byte[] Decrypt(string algName, byte[] bytes, byte[] rgbKey, byte[] rgbIV)
+        {
+            using (var provider = Security.Cryptography.SymmetricAlgorithm.Create(algName))
+            using (var transform = provider.CreateDecryptor(rgbKey, rgbIV))
+            using (var ms = new global::System.IO.MemoryStream())
+            using (var cs = new global::System.Security.Cryptography.CryptoStream(ms, transform, global::System.Security.Cryptography.CryptoStreamMode.Write))
+            {
+                cs.Write(bytes, 0, bytes.Length);
+                cs.FlushFinalBlock();
+                return ms.ToArray();
+            }
+        }
+        string Encrypt(string algName, string value, string rgbKey, string rgbIV)
+        {
+            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(value);
+            byte[] rgbKeyArray = System.Text.Encoding.UTF8.GetBytes(rgbKey);
+            byte[] rgbIVArray = System.Text.Encoding.UTF8.GetBytes(rgbIV);
+            return global::System.Convert.ToBase64String(Encrypt(algName, buffer, rgbKeyArray, rgbIVArray));
+        }
+        string Decrypt(string algName, string value, string rgbKey, string rgbIV)
+        {
+            byte[] buffer = global::System.Convert.FromBase64String(value);
+            byte[] rgbKeyArray = System.Text.Encoding.UTF8.GetBytes(rgbKey);
+            byte[] rgbIVArray = System.Text.Encoding.UTF8.GetBytes(rgbIV);
+            return System.Text.Encoding.UTF8.GetString(Decrypt(algName, buffer, rgbKeyArray, rgbIVArray));
+        }
 
         public string MD5(string value)
         {
-            return Hash(Enums.HashAlgs.MD5, value);
+            return Hash("MD5", value);
         }
         public string SHA1(string value)
         {
-            return Hash(Enums.HashAlgs.SHA1, value);
+            return Hash("SHA1", value);
         }
         public string SHA1(byte[] bytes)
         {
-            return Hash(Enums.HashAlgs.SHA1, bytes);
+            return Hash("SHA1", bytes);
         }
         public string SHA1(global::System.IO.Stream inputStream)
         {
-            return Hash(Enums.HashAlgs.SHA1, inputStream);
+            return Hash("SHA1", inputStream);
         }
         public string SHA256(string value)
         {
-            return Hash(Enums.HashAlgs.SHA256, value);
+            return Hash("SHA256", value);
         }
         public string SHA256(byte[] bytes)
         {
-            return Hash(Enums.HashAlgs.SHA256, bytes);
+            return Hash("SHA256", bytes);
         }
         public string SHA256(global::System.IO.Stream inputStream)
         {
-            return Hash(Enums.HashAlgs.SHA256, inputStream);
+            return Hash("SHA512", inputStream);
         }
         public string SHA512(string value)
         {
-            return Hash(Enums.HashAlgs.SHA512, value);
+            return Hash("SHA512", value);
         }
-        string Hash(Enums.HashAlgs hash, byte[] bytes)
+        string Hash(string hashName, byte[] bytes)
         {
-            using (var provider = Security.Cryptography.HashAlgorithm.Create(hash.ToString()))
+            using (var provider = Security.Cryptography.HashAlgorithm.Create(hashName))
                 return ToBitString(provider.ComputeHash(bytes));
         }
-        string Hash(Enums.HashAlgs hash, string value)
+        string Hash(string hashName, string value)
         {
-            using (var provider = Security.Cryptography.HashAlgorithm.Create(hash.ToString()))
+            using (var provider = Security.Cryptography.HashAlgorithm.Create(hashName))
             {
                 char[] chars = value.ToCharArray();
                 byte[] buffer = global::System.Text.Encoding.UTF8.GetBytes(chars, 0, chars.Length);
                 return ToBitString(provider.ComputeHash(buffer, 0, buffer.Length));
             }
         }
-        string Hash(Enums.HashAlgs hash, global::System.IO.Stream inputStream)
+        string Hash(string hashName, global::System.IO.Stream inputStream)
         {
-            using (var provider = Security.Cryptography.HashAlgorithm.Create(hash.ToString()))
+            using (var provider = Security.Cryptography.HashAlgorithm.Create(hashName))
                 return ToBitString(provider.ComputeHash(inputStream));
         }
 
-        //非对称加解密
+
         public string RSA(string value, string publicKey)
         {
             using (var provider = new global::System.Security.Cryptography.RSACryptoServiceProvider())
@@ -194,20 +170,20 @@ namespace System.X.Cryptography
             }
         }
 
-        public string RSASign(string value, string privateKey, System.X.Enums.HashAlgs hash)
+        public string RSASign(string value, string privateKey, string hashName)
         {
             using (var provider = new global::System.Security.Cryptography.RSACryptoServiceProvider())
             {
                 provider.FromXmlString(privateKey);
-                return Convert.ToBase64String(provider.SignData(global::System.Text.Encoding.UTF8.GetBytes(value), global::System.Security.Cryptography.HashAlgorithm.Create(hash.ToString())));
+                return Convert.ToBase64String(provider.SignData(global::System.Text.Encoding.UTF8.GetBytes(value), global::System.Security.Cryptography.HashAlgorithm.Create(hashName)));
             }
         }
-        public bool RSAVerifySign(string value, string sign, string publicKey, System.X.Enums.HashAlgs hash)
+        public bool RSAVerifySign(string value, string sign, string publicKey, string hashName)
         {
             using (var provider = new global::System.Security.Cryptography.RSACryptoServiceProvider())
             {
                 provider.FromXmlString(publicKey);
-                return provider.VerifyData(global::System.Text.Encoding.UTF8.GetBytes(value), global::System.Security.Cryptography.HashAlgorithm.Create(hash.ToString()), Convert.FromBase64String(sign));
+                return provider.VerifyData(global::System.Text.Encoding.UTF8.GetBytes(value), global::System.Security.Cryptography.HashAlgorithm.Create(hashName), Convert.FromBase64String(sign));
             }
         }
 

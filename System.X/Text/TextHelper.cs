@@ -2,7 +2,7 @@
 
 namespace System.X.Text
 {
-    public sealed class TextHelper
+    sealed class TextHelper
     {
         internal static readonly TextHelper Instance = new TextHelper();
         private TextHelper() { }
@@ -324,6 +324,84 @@ namespace System.X.Text
                 str5 = "零元整";
             }
             return str5;
+        }
+
+
+        string Precede(string p, string q)
+        {
+            switch (p)
+            {
+                case "+":
+                case "-":
+                    return ("*/(".IndexOf(q) != -1) ? "<" : ">";
+                case "*":
+                case "/":
+                    return (q == "(") ? "<" : ">";
+                case "(":
+                    return (q == ")") ? "=" : "<";
+                case ")":
+                    return (q == "(") ? "?" : ">";
+                case "#":
+                    return (q == "#") ? "=" : "<";
+            }
+            return "?";
+        }
+        double Operate(double a, char o, double b)
+        {
+            switch (o)
+            {
+                case '+':
+                    return a + b;
+                case '-':
+                    return a - b;
+                case '*':
+                    return a * b;
+                case '/':
+                    return a / b;
+            }
+            return 0;
+        }
+        object Eval(string Expression)
+        {
+            Collections.Stack nArr = new Collections.Stack(), oArr = new Collections.Stack();
+            int j = 0;
+            double a = 0, b = 0;
+            string w = "";
+            char o;
+            MatchCollection arr = Regex.Matches(Expression.Replace(" ", "") + "#", @"(((?<=(^|\())-)?\d+(\.\d+)?|\D)");
+            oArr.Push('#');
+            w = Convert.ToString(arr[j++]);
+            while (!(w == "#" && Convert.ToString(oArr.Peek()) == "#"))
+            {
+                if ("+-*/()#".IndexOf(w) != -1)
+                {
+                    switch (Precede(oArr.Peek().ToString(), w))
+                    {
+                        case "<":
+                            oArr.Push(w);
+                            w = Convert.ToString(arr[j++]);
+                            break;
+                        case "=":
+                            oArr.Pop();
+                            w = Convert.ToString(arr[j++]);
+                            break;
+                        case ">":
+                            o = Convert.ToChar(oArr.Pop());
+                            b = Convert.ToDouble(nArr.Pop());
+                            a = Convert.ToDouble(nArr.Pop());
+                            nArr.Push(Operate(a, o, b));
+                            break;
+                        default:
+                            return "Error";
+                    }
+                }
+                else
+                {
+                    nArr.Push(w);
+                    w = Convert.ToString(arr[j++]);
+                }
+            }
+            return nArr.Pop();
         }
     }
 }

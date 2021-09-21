@@ -9,7 +9,7 @@ namespace System.Data.Entity
     public abstract class BaseRepository<TEntity> where TEntity : BaseEntity, new()
     {
         protected internal UnitOfWork UnitOfWork { get; }
-        readonly DbContext db;
+        protected internal readonly DbContext db;
         protected internal BaseRepository(UnitOfWork unitOfWork)
         {
             this.UnitOfWork = unitOfWork;
@@ -35,7 +35,6 @@ namespace System.Data.Entity
 
         public void Update(TEntity entity)
         {
-            this.db.Entry(entity).Property(c => c.CreateTime).IsModified = false;
             this.db.Set<TEntity>().Update(entity);
         }
         public void Update(TEntity entity, IEnumerable<Linq.Expressions.Expression<Func<TEntity, dynamic>>> includes)
@@ -47,8 +46,6 @@ namespace System.Data.Entity
         }
         public void UpdateRange(IEnumerable<TEntity> entities)
         {
-            foreach (var entity in entities)
-                this.db.Entry(entity).Property(c => c.CreateTime).IsModified = false;
             this.db.Set<TEntity>().UpdateRange(entities);
         }
         public void UpdateRange(IEnumerable<TEntity> entities, IEnumerable<Linq.Expressions.Expression<Func<TEntity, dynamic>>> includes)
@@ -58,24 +55,6 @@ namespace System.Data.Entity
                 this.db.Entry(entity).State = EntityState.Unchanged;
                 foreach (var prop in includes)
                     this.db.Entry(entity).Property(prop).IsModified = true;
-            }
-            this.db.Set<TEntity>().UpdateRange(entities);
-        }
-
-        public void SoftDelete(TEntity entity)
-        {
-            this.db.Entry(entity).State = EntityState.Unchanged;
-            entity.IsDeleted = true;
-            this.db.Entry(entity).Property(c => c.IsDeleted).IsModified = true;
-            this.db.Set<TEntity>().Update(entity);
-        }
-        public void SoftDeleteRange(IEnumerable<TEntity> entities)
-        {
-            foreach (var entity in entities)
-            {
-                this.db.Entry(entity).State = EntityState.Unchanged;
-                entity.IsDeleted = true;
-                this.db.Entry(entity).Property(c => c.IsDeleted).IsModified = true;
             }
             this.db.Set<TEntity>().UpdateRange(entities);
         }
@@ -115,7 +94,7 @@ namespace System.Data.Entity
 
             foreach (var item in conditions)
             {
-                var predicate = item.Name.StartsWith("#") ? BuildCustomQuery(item) : Fn.Expression.LambdaBuild<TEntity>(item.Name, item.Mode, item.Values);
+                var predicate = item.Name.StartsWith("#") ? BuildCustomQuery(item) : Fn.Expression.Lambda<TEntity>(item.Name, item.Mode, item.Values);
                 if (predicate != null)
                     query = query.Where(predicate);
             }
@@ -167,6 +146,11 @@ namespace System.Data.Entity
         {
             var query = BuildQuery(queryItems);
             return (query.Skip(pageIndex * pageSize).Take(pageSize).ToList(), query.Count());
+        }
+        public (List<TResult>, int) GetAll<TResult>(IEnumerable<QueryItem> queryItems, int pageIndex, int pageSize, Func<TEntity, TResult> selector)
+        {
+            var query = BuildQuery(queryItems);
+            return (query.Skip(pageIndex * pageSize).Take(pageSize).Select(selector).ToList(), query.Count());
         }
         public (List<TResult>, int) GetAll<TResult>(QueryFilter filter, Func<TEntity, TResult> selector)
         {
@@ -237,6 +221,13 @@ namespace System.Data.Entity
         public Task<decimal> GetSumAsync(Linq.Expressions.Expression<Func<TEntity, decimal>> predicate)
         {
             return this.db.Set<TEntity>().AsNoTracking().SumAsync(predicate);
+        }
+    }
+
+    public abstract class BaseRepository<TEntity, TKey> : BaseRepository<TEntity> where TEntity : BaseEntity<TKey>, new()
+    {
+        protected internal BaseRepository(UnitOfWork unitOfWork):base(unitOfWork)
+        {
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿namespace System.Data
 {
     [global::System.Runtime.Serialization.DataContract, global::System.Serializable]
-    public struct QueryItem
+    public struct QueryItem : IEquatable<QueryItem>
     {
         [global::System.Runtime.Serialization.DataMember]
         public string Name { get; set; }
@@ -17,19 +17,19 @@
                 return Equals(this, (QueryItem)obj);
             return false;
         }
-        public bool Equals(QueryItem item)
+        public bool Equals(QueryItem other)
         {
-            if (this.Name != item.Name || this.Mode != item.Mode)
+            if (this.Name != other.Name || this.Mode != other.Mode)
                 return false;
 
-            if (this.Values == null && item.Values == null)
+            if (this.Values == null && other.Values == null)
                 return true;
 
-            if (this.Values != null && item.Values != null && this.Values.Length == item.Values.Length)
+            if (this.Values != null && other.Values != null && this.Values.Length == other.Values.Length)
             {
                 int i = 0;
                 for (; i < this.Values.Length; i++)
-                    if (this.Values[i] != item.Values[i])
+                    if (this.Values[i] != other.Values[i])
                         return false;
                 return true;
             }
@@ -42,8 +42,8 @@
         public override string ToString()
         {
             if (this.Values == null || this.Values.Length == 0)
-                return $"{{\"name\":\"{Name}\",\"mode\":\"{Mode}\",\"values\":[]}}";
-            return $"{{\"name\":\"{Name}\",\"mode\":\"{Mode}\",\"values\":[\"{string.Join("\",\"", Values)}\"]}}";
+                return $"{{\"Name\":\"{Name}\",\"Mode\":\"{Mode}\",\"Values\":[]}}";
+            return $"{{\"Name\":\"{Name}\",\"Mode\":\"{Mode}\",\"Values\":[\"{string.Join("\",\"", Values)}\"]}}";
         }
     }
 }

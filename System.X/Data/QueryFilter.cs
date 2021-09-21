@@ -4,7 +4,7 @@ using System.Linq;
 namespace System.Data
 {
     [global::System.Runtime.Serialization.DataContract, global::System.Serializable]
-    public struct QueryFilter
+    public struct QueryFilter : IEquatable<QueryFilter>
     {
         [global::System.Runtime.Serialization.DataMember]
         public List<QueryItem> Items { get; set; }
@@ -20,19 +20,19 @@ namespace System.Data
                 return this.Equals((QueryFilter)obj);
             return false;
         }
-        public bool Equals(QueryFilter filter)
+        public bool Equals(QueryFilter other)
         {
-            if (this.PageIndex != filter.PageIndex || this.PageSize != filter.PageSize)
+            if (this.PageIndex != other.PageIndex || this.PageSize != other.PageSize)
                 return false;
 
-            if (this.Items == null && filter.Items == null)
+            if (this.Items == null && other.Items == null)
                 return true;
 
-            if (this.Items != null && filter.Items != null && this.Items.Count == filter.Items.Count)
+            if (this.Items != null && other.Items != null && this.Items.Count == other.Items.Count)
             {
                 int i = 0;
                 for (; i < this.Items.Count; i++)
-                    if (!this.Items[i].Equals(filter.Items[i]))
+                    if (!this.Items[i].Equals(other.Items[i]))
                         return false;
                 return true;
             }
