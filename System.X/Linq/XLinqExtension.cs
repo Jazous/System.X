@@ -51,39 +51,7 @@ namespace System.Linq
         {
             return source.Where(c => values.Contains(keySelector.Invoke(c)));
         }
-        public static List<TSource> Distinct<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
-        {
-            var result = new List<TSource>();
-            var keys = new List<TKey>();
-            if (source is IList<TSource>)
-                return Distinct((IList<TSource>)source, keySelector);
 
-            foreach (var item in source)
-            {
-                var key = keySelector.Invoke(item);
-                if (keys.Contains(key))
-                    continue;
-
-                keys.Add(key);
-                result.Add(item);
-            }
-            return result;
-        }
-        public static List<TSource> Distinct<TSource, TKey>(this IList<TSource> source, Func<TSource, TKey> keySelector)
-        {
-            var result = new List<TSource>();
-            var keys = new List<TKey>();
-            for (int i = 0; i < source.Count; i++)
-            {
-                var key = keySelector.Invoke(source[i]);
-                if (keys.Contains(key))
-                    continue;
-
-                keys.Add(key);
-                result.Add(source[i]);
-            }
-            return result;
-        }
         public static bool Contains(this IEnumerable<string> source, string item, bool ignoreCase)
         {
             return Contains(source, item, ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
@@ -91,7 +59,7 @@ namespace System.Linq
         public static bool Contains(this IEnumerable<string> source, string item, StringComparison comparisonType)
         {
             if (source is IList<string>)
-                return Contains((IList<string>)source, item, comparisonType);
+                return Contains((IList<string>)source, item, comparisonType); 
 
             foreach (var str in source)
                 if (string.Equals(str, item, comparisonType))

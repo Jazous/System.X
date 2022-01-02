@@ -21,17 +21,17 @@ namespace System.X.Linq
         {
             switch (mode)
             {
-                case QueryMode.Equal: return Equal<T>(propertyName, values);
-                case QueryMode.NotEqual: return NotEqual<T>(propertyName, values);
-                case QueryMode.GreaterThan: return GreaterThan<T>(propertyName, values[0]);
-                case QueryMode.GreaterThanOrEqual: return GreaterThanOrEqual<T>(propertyName, values[0]);
-                case QueryMode.LessThan: return LessThan<T>(propertyName, values[0]);
-                case QueryMode.LessThanOrEqual: return LessThanOrEqual<T>(propertyName, values[0]);
-                case QueryMode.Like: return Contains<T>(propertyName, values);
-                case QueryMode.StartWith: return StartWith<T>(propertyName, values);
-                case QueryMode.EndWith: return EndWith<T>(propertyName, values);
-                case QueryMode.NotIn: return Except<T>(propertyName, values);
-                case QueryMode.In: return Include<T>(propertyName, values);
+                case QueryMode.EQ: return Equal<T>(propertyName, values);
+                case QueryMode.NTEQ: return NotEqual<T>(propertyName, values);
+                case QueryMode.GT: return GreaterThan<T>(propertyName, values[0]);
+                case QueryMode.GTEQ: return GreaterThanOrEqual<T>(propertyName, values[0]);
+                case QueryMode.LT: return LessThan<T>(propertyName, values[0]);
+                case QueryMode.LTEQ: return LessThanOrEqual<T>(propertyName, values[0]);
+                case QueryMode.LK: return Contains<T>(propertyName, values);
+                case QueryMode.SW: return StartWith<T>(propertyName, values);
+                case QueryMode.EW: return EndWith<T>(propertyName, values);
+                case QueryMode.NTIN: return Except<T>(propertyName, values);
+                case QueryMode.IN: return Include<T>(propertyName, values);
             }
             return null;
         }

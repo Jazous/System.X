@@ -1,9 +1,8 @@
-﻿namespace System.X.Enums
+﻿namespace System.X.Enums;
+
+public enum OSPlatform
 {
-    public enum OSPlatform
-    {
-        Windows = 1,
-        Linux = 2,
-        MacOSX = 3
-    }
+    Windows = 1,
+    Linux = 2,
+    MacOSX = 3
 }

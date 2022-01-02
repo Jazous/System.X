@@ -45,46 +45,5 @@ namespace System.X.IO
             foreach (var info in dirInfos)
                 CopyFolder(info, Path.Combine(destDirName, info.Name));
         }
-
-        public string Create(byte[] bytes)
-        {
-            string tempFile = Path.GetTempFileName();
-            using (var fs = System.IO.File.OpenWrite(tempFile))
-            {
-                fs.Write(bytes, 0, bytes.Length);
-                fs.Flush();
-            }
-            return tempFile;
-        }
-        public async Task<string> CreateAsync(byte[] bytes)
-        {
-            string tempFile = Path.GetTempFileName();
-            using (var fs = System.IO.File.OpenWrite(tempFile))
-            {
-                await fs.WriteAsync(bytes, 0, bytes.Length);
-                fs.Flush();
-            }
-            return tempFile;
-        }
-        public string Create(Stream stream)
-        {
-            string tempFile = Path.GetTempFileName();
-            using (var fs = System.IO.File.OpenWrite(tempFile))
-            {
-                stream.CopyTo(fs);
-                fs.Flush();
-            }
-            return tempFile;
-        }
-        public async Task<string> CreateAsync(Stream stream)
-        {
-            string tempFile = Path.GetTempFileName();
-            using (var fs = System.IO.File.OpenWrite(tempFile))
-            {
-                await stream.CopyToAsync(fs);
-                fs.Flush();
-            }
-            return tempFile;
-        }
     }
 }

@@ -15,7 +15,7 @@ namespace System.X.Net
 
         private HttpHelper() { }
 
-        public async Task<string> GET(string url, string token = null, int timeout = 60)
+        public async Task<string> GET(string url, string? token = null, int timeout = 60)
         {
             using (var client = new System.Net.Http.HttpClient())
             {
@@ -26,7 +26,7 @@ namespace System.X.Net
                 return await response.Content.ReadAsStringAsync();
             }
         }
-        public async Task<byte[]> GET_ToBytes(string url, string token = null, int timeout = 60)
+        public async Task<byte[]> GET_ToBytes(string url, string? token = null, int timeout = 60)
         {
             using (var client = new System.Net.Http.HttpClient())
             {
@@ -37,7 +37,7 @@ namespace System.X.Net
                 return await response.Content.ReadAsByteArrayAsync();
             }
         }
-        public async Task<string> GET_ToFile(string url, string token = null, int timeout = 60)
+        public async Task<string> GET_ToFile(string url, string? token = null, int timeout = 60)
         {
             using (var client = new System.Net.Http.HttpClient())
             {
@@ -45,7 +45,7 @@ namespace System.X.Net
                 client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", token);
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
-                string fileName = Fn.NewDir() + response.Content.Headers.ContentDisposition.FileName;
+                string fileName = Fn.NewDir() + response.Content.Headers.ContentDisposition?.FileName ?? Guid.NewGuid().ToString();
                 using (var fs = System.IO.File.OpenWrite(fileName))
                     await response.Content.CopyToAsync(fs);
 
@@ -54,7 +54,7 @@ namespace System.X.Net
         }
 
 
-        public Task<string> POST(string url, string jsonData, string token = null, int timeout = 60)
+        public Task<string> POST(string url, string jsonData, string? token = null, int timeout = 60)
         {
             var content = new StringContent(jsonData);
             content.Headers.TryAddWithoutValidation("Authorization", token);
@@ -62,11 +62,11 @@ namespace System.X.Net
             content.Headers.TryAddWithoutValidation("timestamp", DateTime.Now.ToString("yyyyMMddHHmmssttt"));
             return PostAsync(url, content, timeout);
         }
-        public Task<string> POST(string url, IEnumerable<NameValue> formData, string token = null, int timeout = 60)
+        public Task<string> POST(string url, IEnumerable<NameValue> formData, string? token = null, int timeout = 60)
         {
             return POST(url, formData, (string)null, token, timeout);
         }
-        public Task<string> POST(string url, IEnumerable<NameValue> formData, string srcFileName, string token = null, int timeout = 60)
+        public Task<string> POST(string url, IEnumerable<NameValue> formData, string srcFileName, string? token = null, int timeout = 60)
         {
             var content = new MultipartFormDataContent();
             if (!string.IsNullOrEmpty(srcFileName))
@@ -81,7 +81,7 @@ namespace System.X.Net
 
             return PostAsync(url, content, timeout);
         }
-        public Task<string> POST(string url, IEnumerable<NameValue> formData, IEnumerable<FileSystemInfo> files, string token = null, int timeout = 60)
+        public Task<string> POST(string url, IEnumerable<NameValue> formData, IEnumerable<FileSystemInfo> files, string? token = null, int timeout = 60)
         {
             var content = new MultipartFormDataContent();
             if (files != null)
@@ -97,7 +97,7 @@ namespace System.X.Net
 
             return PostAsync(url, content, timeout);
         }
-        public async Task<byte[]> POST_ToBytes(string url, string jsonData, string token = null, int timeout = 60)
+        public async Task<byte[]> POST_ToBytes(string url, string jsonData, string? token = null, int timeout = 60)
         {
             var content = new StringContent(jsonData, Encoding.UTF8);
             content.Headers.TryAddWithoutValidation("Authorization", token);
@@ -111,7 +111,7 @@ namespace System.X.Net
                 return await response.Content.ReadAsByteArrayAsync();
             }
         }
-        public async Task<string> POST_ToFile(string url, string jsonData, string token = null, int timeout = 60)
+        public async Task<string> POST_ToFile(string url, string jsonData, string? token = null, int timeout = 60)
         {
             var content = new StringContent(jsonData, Encoding.UTF8);
             content.Headers.TryAddWithoutValidation("Authorization", token);
@@ -122,14 +122,14 @@ namespace System.X.Net
                 client.Timeout = TimeSpan.FromSeconds(timeout);
                 var response = await client.PostAsync(url, content);
                 response.EnsureSuccessStatusCode();
-                string fileName = Fn.NewDir() + response.Content.Headers.ContentDisposition.FileName;
+                string fileName = Fn.NewDir() + response.Content.Headers.ContentDisposition?.FileName ?? Guid.NewGuid().ToString();
                 using (var fs = System.IO.File.OpenWrite(fileName))
                     await response.Content.CopyToAsync(fs);
 
                 return fileName;
             }
         }
-        public async Task<Stream> POST_ToStream(string url, string jsonData, string token = null, int timeout = 60)
+        public async Task<Stream> POST_ToStream(string url, string jsonData, string? token = null, int timeout = 60)
         {
             var content = new StringContent(jsonData, Encoding.UTF8);
             content.Headers.TryAddWithoutValidation("Authorization", token);
@@ -154,7 +154,7 @@ namespace System.X.Net
             }
         }
 
-        public async Task<string> GET_SSL(string url, string cert, string token = null, int timeout = 60)
+        public async Task<string> GET_SSL(string url, string cert, string? token = null, int timeout = 60)
         {
             using (var handler = new System.Net.Http.HttpClientHandler())
             using (var x509cert = GetX509Certificate(cert))
@@ -170,7 +170,7 @@ namespace System.X.Net
                 }
             }
         }
-        public Task<string> POST_SSL(string url, string jsonData, string cert, string token = null, int timeout = 60)
+        public Task<string> POST_SSL(string url, string jsonData, string cert, string? token = null, int timeout = 60)
         {
             var content = new StringContent(jsonData);
             content.Headers.TryAddWithoutValidation("Authorization", token);
@@ -178,7 +178,7 @@ namespace System.X.Net
             content.Headers.TryAddWithoutValidation("timestamp", DateTime.Now.ToString("yyyyMMddHHmmssttt"));
             return PostAsync(url, content, cert, timeout);
         }
-        public Task<string> POST_SSL(string url, IEnumerable<NameValue> formData, string cert, string token = null, int timeout = 60)
+        public Task<string> POST_SSL(string url, IEnumerable<NameValue> formData, string cert, string? token = null, int timeout = 60)
         {
             var content = new MultipartFormDataContent();
             if (formData != null)

@@ -269,7 +269,7 @@ namespace System.X.Drawing
                 case FlipMode.Horizontal: return FlipHorizontal(image);
                 case FlipMode.Vertical: return FlipVertical(image);
                 case FlipMode.Both: return FlipBoth(image);
-                default:return image;
+                default: return image;
             }
         }
         Bitmap FlipBoth(Bitmap image)
@@ -324,57 +324,49 @@ namespace System.X.Drawing
             return bm;
         }
 
-        System.Drawing.Bitmap InternalQRCode(string content, int pixel = 11, int version = -1, Bitmap logo = null)
+        public byte[] QRCode(string content, int pixel = 11, int version = -1)
         {
             using (var gene = new QRCoder.QRCodeGenerator())
             using (var data = gene.CreateQrCode(content, QRCoder.QRCodeGenerator.ECCLevel.M, true, true, QRCoder.QRCodeGenerator.EciMode.Utf8, version))
-            using (var code = new QRCoder.QRCode(data))
-                return code.GetGraphic(pixel, Color.Black, Color.White, logo);
+            using (var code = new QRCoder.PngByteQRCode(data))
+                return code.GetGraphic(pixel);
         }
-        public byte[] QRCode(string content, int pixel = 11, int version = -1, Bitmap logo = null)
+        public void QRCode(string content, string destFileName, int pixel = 11, int version = -1)
         {
-            using (var ms = new MemoryStream())
-            {
-                using (var img = InternalQRCode(content, pixel, version, logo))
-                    img.Save(ms, ImageFormat.Jpeg);
-                return ms.GetBuffer();
-            }
+            using (var gene = new QRCoder.QRCodeGenerator())
+            using (var data = gene.CreateQrCode(content, QRCoder.QRCodeGenerator.ECCLevel.M, true, true, QRCoder.QRCodeGenerator.EciMode.Utf8, version))
+            using (var code = new QRCoder.PngByteQRCode(data))
+                File.WriteAllBytes(destFileName, code.GetGraphic(pixel));
         }
-        public void QRCode(string content, string srcFileName, int pixel = 11, int version = -1, Bitmap logo = null)
-        {
-            using (var img = InternalQRCode(content, pixel, version, logo))
-                img.Save(srcFileName, ImageFormat.Jpeg);
-        }
-        public void QRCode(string content, Stream outputStream, int pixel = 11, int version = -1, Bitmap logo = null)
-        {
-            using (var img = InternalQRCode(content, pixel, version, logo))
-                img.Save(outputStream, ImageFormat.Jpeg);
-        }
+
         public byte[] BarCode128(string content, int width = 250, int heigth = 50)
         {
             using (var ms = new MemoryStream())
-            {
-                BarCode128(content, ms, width, heigth);
-                return ms.GetBuffer();
-            }
-        }
-        public void BarCode128(string content, string srcFileName, int width = 250, int heigth = 50)
-        {
-            using (var fs = File.OpenWrite(srcFileName))
-            {
-                BarCode128(content, fs, width, heigth);
-                fs.Flush();
-            }
-        }
-        public void BarCode128(string content, Stream outputStream, int width = 250, int heigth = 50)
-        {
             using (var bc = new BarcodeLib.Barcode())
             {
                 bc.IncludeLabel = true;
                 bc.Alignment = BarcodeLib.AlignmentPositions.CENTER;
                 bc.LabelFont = new System.Drawing.Font(System.Drawing.FontFamily.GenericMonospace, heigth * 0.3f, System.Drawing.FontStyle.Regular);
-                var img = bc.Encode(BarcodeLib.TYPE.CODE128, content, System.Drawing.Color.Black, System.Drawing.Color.White, width, heigth);
-                img.Save(outputStream, ImageFormat.Jpeg);
+                using (var img = bc.Encode(BarcodeLib.TYPE.CODE128, content, System.Drawing.Color.Black, System.Drawing.Color.White, width, heigth))
+                {
+                    img.Save(ms, ImageFormat.Jpeg);
+                    return ms.GetBuffer();
+                }
+            }
+        }
+        public void BarCode128(string content, string srcFileName, int width = 250, int heigth = 50)
+        {
+            using (var ms = new MemoryStream())
+            using (var bc = new BarcodeLib.Barcode())
+            {
+                bc.IncludeLabel = true;
+                bc.Alignment = BarcodeLib.AlignmentPositions.CENTER;
+                bc.LabelFont = new System.Drawing.Font(System.Drawing.FontFamily.GenericMonospace, heigth * 0.3f, System.Drawing.FontStyle.Regular);
+                using (var img = bc.Encode(BarcodeLib.TYPE.CODE128, content, System.Drawing.Color.Black, System.Drawing.Color.White, width, heigth))
+                {
+                    img.Save(ms, ImageFormat.Jpeg);
+                    System.IO.File.WriteAllBytes(srcFileName, ms.GetBuffer());
+                }
             }
         }
         public byte[] GetBytes(System.Drawing.Image image)
