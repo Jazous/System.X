@@ -5,7 +5,17 @@
       "ProjectGuid": "19cb680b-e8b5-44b9-8f80-3b59d6a6e5ea",
       "DisplayName": "System.X",
       "ColorIndex": 0
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "杂项文件",
+      "ColorIndex": -1
+    },
+    "d4764189-2c5b-4d39-937a-df0c620e43de": {
+      "ProjectGuid": "d4764189-2c5b-4d39-937a-df0c620e43de",
+      "DisplayName": "System.X.Tests",
+      "ColorIndex": 1
     }
   },
-  "NextColorIndex": 1
+  "NextColorIndex": 2
 }

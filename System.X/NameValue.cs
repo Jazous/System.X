@@ -1,21 +1,24 @@
 ﻿namespace System;
 
 /// <summary>
-/// 表示 System.String 键和 System.String 值的结构。
+/// Defines a name/value pair that can be set or retrieved.
 /// </summary>
 public struct NameValue
 {
     /// <summary>
-    /// 获取键/值对中的键。
+    /// The type of the name.
     /// </summary>
     public string Name { get; set; }
     /// <summary>
-    /// 获取键/值对中的值。
+    /// The type of the value.
     /// </summary>
     public string Value { get; set; }
 
+    /// <summary>
+    /// Returns the fully qualified type name of this instance.
+    /// </summary>
     public override string ToString()
     {
-        return $"{{\"Name\":\"{ Name}\",\"Value\":\"{ Value}\"}}";
+        return $"{{\"Name\":\"{Name}\",\"Value\":\"{Value}\"}}";
     }
 }

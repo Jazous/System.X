@@ -1,26 +1,16 @@
 ﻿namespace System;
 
-/// <summary>
-/// Number prefix string comparer for special sorting.
-/// </summary>
 public sealed class StringNumberComparer : System.Collections.Generic.IComparer<string>
 {
     readonly int mark;
-    readonly int maxComparLength;
-    public bool NullsLast { get => mark == -1; }
+    readonly int maxLength;
 
     public StringNumberComparer() : this(false, -1)
     {
     }
-    public StringNumberComparer(int maxComparLength) : this(false, maxComparLength)
+    public StringNumberComparer(bool nullsLast, int maxCompareCharLength)
     {
-    }
-    public StringNumberComparer(bool nullsLast) : this(nullsLast, -1)
-    {
-    }
-    public StringNumberComparer(bool nullsLast, int maxComparLength)
-    {
-        this.maxComparLength = maxComparLength > 0 ? maxComparLength : 0x20;
+        this.maxLength = maxCompareCharLength > 0 ? maxCompareCharLength : 0x20;
         this.mark = nullsLast ? -1 : 1;
     }
 
@@ -51,7 +41,7 @@ public sealed class StringNumberComparer : System.Collections.Generic.IComparer<
     }
     int GetNumberIndex(string value)
     {
-        int len = value.Length > this.maxComparLength ? this.maxComparLength : value.Length;
+        int len = value.Length > this.maxLength ? this.maxLength : value.Length;
         char ch;
         int i = 0;
         bool flag = false;

@@ -10,9 +10,9 @@ namespace System.X.IO
     {
         internal static readonly CompressHelper Instance = new CompressHelper();
 
-        private CompressHelper() { }
-        
-        public async Threading.Tasks.Task<string> GZip(string value)
+        private CompressHelper() {}
+
+        public string GZip(string value)
         {
             var bytes = new byte[value.Length];
             int index = 0;
@@ -20,14 +20,14 @@ namespace System.X.IO
             foreach (char item in items)
                 bytes[index++] = (byte)item;
 
-            var buffer = await GZip(bytes);
+            var buffer = GZip(bytes);
             var sb = new System.Text.StringBuilder(buffer.Length);
             foreach (byte item in buffer)
                 sb.Append((char)item);
 
             return sb.ToString();
         }
-        public async Threading.Tasks.Task<string> UnGZip(string value)
+        public string GZipExtract(string value)
         {
             var bytes = new byte[value.Length];
             int index = 0;
@@ -35,24 +35,45 @@ namespace System.X.IO
             foreach (char item in items)
                 bytes[index++] = (byte)item;
 
-            var buffer = await UnGZip(bytes);
+            var buffer = GZipExtract(bytes);
             var sb = new System.Text.StringBuilder(buffer.Length);
             for (int i = 0; i < buffer.Length; i++)
                 sb.Append((char)buffer[i]);
 
             return sb.ToString();
         }
-        public async Threading.Tasks.Task<byte[]> GZip(byte[] bytes)
+
+        public byte[] GZip(byte[] bytes)
+        {
+            using (var ms = new System.IO.MemoryStream())
+            {
+                using (var sw = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionMode.Compress))
+                    sw.Write(bytes, 0, bytes.Length);
+
+                return ms.GetBuffer();
+            }
+        }
+        public async Threading.Tasks.Task<byte[]> GZipAsync(byte[] bytes)
         {
             using (var ms = new System.IO.MemoryStream())
             {
                 using (var sw = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionMode.Compress))
                     await sw.WriteAsync(bytes, 0, bytes.Length);
 
-                return ms.ToArray();
+                return ms.GetBuffer();
             }
         }
-        public async Threading.Tasks.Task<byte[]> UnGZip(byte[] bytes)
+        public byte[] GZipExtract(byte[] bytes)
+        {
+            using (var ms = new System.IO.MemoryStream(bytes))
+            using (var sr = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionMode.Decompress))
+            {
+                byte[] buffer = new byte[sr.Length];
+                sr.Read(buffer, 0, buffer.Length);
+                return buffer;
+            }
+        }
+        public async Threading.Tasks.Task<byte[]> GZipExtractAsync(byte[] bytes)
         {
             using (var ms = new System.IO.MemoryStream(bytes))
             using (var sr = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionMode.Decompress))
@@ -84,15 +105,14 @@ namespace System.X.IO
             System.IO.Compression.ZipFile.CreateFromDirectory(srcDirName, destFileName);
         }
         /// <summary>
-        /// Extracts all of the files in the specified zip archive to temporary directory on the file system
+        /// Extracts all of the files in the specified zip archive to current directory named zip archive fileName without extension on the file system.
         /// </summary>
         /// <param name="srcFileName">The path on the file system to the archive that is to be extracted.</param>
-        /// <param name="overwrite">true to overwrite files; false otherwise.</param>
         /// <returns>The path to the destination directory on the file system.</returns>
-        public string ZipExtract(string srcFileName, bool overwrite = true)
+        public string ZipExtract(string srcFileName)
         {
-            string tempDir = Fn.NewDir();
-            ZipExtract(srcFileName, tempDir, overwrite);
+            string tempDir = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(srcFileName), System.IO.Path.GetFileNameWithoutExtension(srcFileName));
+            ZipExtract(srcFileName, tempDir, true);
             return tempDir;
         }
         /// <summary>

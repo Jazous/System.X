@@ -1,4 +1,4 @@
-﻿namespace System;
+﻿ namespace System;
 
 public sealed class Fn
 {
@@ -15,14 +15,9 @@ public sealed class Fn
     /// </summary>
     public static X.Enums.OSPlatform Platform { get; }
 
-    //public static System.X.Data.DataHelper Data { get => System.X.Data.DataHelper.Instance; }
-    //public static System.X.IO.FileHelper File { get => System.X.IO.FileHelper.Instance; }
-    //public static System.X.IO.ProfileHelper Profile { get => System.X.IO.ProfileHelper.Instance; }
-    //public static System.X.Text.HtmlHelper Html { get => System.X.Text.HtmlHelper.Instance; }
-    //public static System.X.Text.ValidHelper Valid { get => System.X.Text.ValidHelper.Instance; }
     public static System.X.Drawing.ImageHelper Image { get => System.X.Drawing.ImageHelper.Instance; }
     public static System.X.Cryptography.CryptoHelper Crypto { get => System.X.Cryptography.CryptoHelper.Instance; }
-    public static System.X.Net.HttpHelper HTTP { get => X.Net.HttpHelper.Instance; }
+    public static System.X.Web.ApiHelper WebApi { get => System.X.Web.ApiHelper.Instance; }
     public static System.X.IO.CompressHelper Compress { get => X.IO.CompressHelper.Instance; }
     public static System.X.Linq.ExpressionHelper Expression { get => System.X.Linq.ExpressionHelper.Instance; }
 
@@ -32,8 +27,10 @@ public sealed class Fn
             Platform = X.Enums.OSPlatform.Windows;
         else if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
             Platform = X.Enums.OSPlatform.Linux;
-        if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+        else if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
             Platform = X.Enums.OSPlatform.MacOSX;
+        else if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.FreeBSD))
+            Platform = X.Enums.OSPlatform.FreeBSD;
     }
     private Fn()
     {
@@ -166,138 +163,18 @@ public sealed class Fn
         return System.X.Data.DataHelper.Instance.MapTo<T>(source, mapping);
     }
 
-    public static string MineType(string extension)
-    {
-        if (string.IsNullOrEmpty(extension))
-            return "application/octet-stream";
 
-        var ext = extension.ToLower();
-        switch (ext)
-        {
-            case ".apk": return "application/vnd.android.package-archive";
-            case ".jar": return "application/java-archive";
-            case ".js": return "application/x-javascript";
-            case ".mpc": return "application/vnd.mpohun.certificate";
-            case ".acx": return "application/internet-property-stream";
-            case ".crt":
-            case ".cer": return "application/x-x509-ca-cert";
-            case ".spc": return "application/x-pkcs7-certificates";
-            case ".dll": return "application/x-msdownload";
-            case ".sh": return "application/x-sh";
-            case ".iii": return "application/x-iphone";
-
-            case ".doc": return "application/msword";
-            case ".docx": return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-            case ".pdf": return "application/pdf";
-            case ".rtf": return "application/rtf";
-            case ".xla":
-            case ".xlc":
-            case ".xlm":
-            case ".xlt":
-            case ".xlw":
-            case ".xls": return "application/vnd.ms-excel";
-            case ".xlsx": return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-            case ".pps":
-            case ".ppt": return "application/vnd.ms-powerpoint";
-            case ".pptx": return "application/vnd.openxmlformats-officedocument.presentationml.prese";
-            case ".wcm":
-            case ".wdb":
-            case ".wks":
-            case ".wps": return "application/vnd.ms-works";
-            case ".msg": return "application/vnd.ms-outlook";
-            case ".mmp": return "application/vnd.ms-project";
-
-            case ".rar": return "application/x-rar-compressed";
-            case ".zip": return "application/x-zip-compressed";
-            case ".gtar": return "application/x-gtar";
-            case ".tar": return "application/x-tar";
-            case ".gz": return "application/x-gzip";
-            case ".z": return "application/x-compress";
-            case ".tgz": return "application/x-compressed";
-
-            case ".css": return "text/css";
-            case ".html":
-            case ".htm":
-            case ".shtml": return "text/html";
-            case ".c":
-            case ".cpp":
-            case ".h":
-            case ".java":
-            case ".class":
-            case ".py":
-            case ".cfg":
-            case ".conf":
-            case ".config":
-            case ".cs":
-            case ".log":
-            case ".txt":
-            case ".ini":
-            case ".md":
-            case ".xml": return "text/plain";
-            case ".rtx": return "text/richtext";
-
-            case ".kar":
-            case ".midi":
-            case ".mid": return "audio/midit";
-            case ".mp2":
-            case ".mp3": return "audio/mpeg";
-            case ".ogg": return "audio/ogg";
-            case ".m4a":
-            case ".m4b":
-            case ".m4p": return "audio/x-m4a-latm";
-            case ".wav": return "audio/x-wav";
-            case ".wma": return "audio/x-ms-wma";
-            case ".wmv": return "audio/x-ms-wmv";
-            case ".ra": return "audio/x-realaudio";
-            case ".m3u": return "audio/x-mpegurl";
-
-            case ".gif": return "image/gif";
-            case ".jpe":
-            case ".jpg":
-            case ".jpeg": return "image/jpeg";
-            case ".png": return "image/png";
-            case ".tif":
-            case ".tiff": return "image/tiff";
-            case ".wbmp": return "image/vnd.wap.wbmp";
-            case ".ico": return "image/x-icon";
-            case ".jng": return "image/x-jng";
-            case ".bmp": return "image/x-ms-bmp";
-            case ".svg":
-            case ".svgz": return "image/svg+xml";
-            case ".webp": return "image/webp";
-
-            case ".3gpp":
-            case ".3gp": return "video/3gpp";
-            case ".mp4": return "video/mp4";
-            case ".mpv2":
-            case ".mpe":
-            case ".mpeg":
-            case ".mpg":
-            case ".mpga": return "video/mpeg";
-            case ".mov": return "video/quicktime";
-            case ".m4u": return "video/x-m4v";
-            case ".webm": return "video/webm";
-            case ".flv": return "video/x-flv";
-            case ".m4v": return "video/x-m4v";
-            case ".asf": return "video/x-ms-asf";
-            case ".avi": return "video/x-msvideo";
-            case ".rmvb": return "audio/x-pn-realaudio";
-            case ".swf": return "application/x-shockwave-flash";
-
-            default: return "application/octet-stream";
-        }
-    }
-    public static string GetDescription(Enum value)
+    public static string Description(Enum value)
     {
         string text = value.ToString();
         var desc = (System.ComponentModel.DescriptionAttribute)value.GetType().GetField(text).GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false).FirstOrDefault();
         return desc == null ? text : desc.Description;
     }
-    public static string GetDescription<TSource>(Linq.Expressions.Expression<Func<TSource, dynamic>> memberSelector)
+    public static string Description<TSource>(Linq.Expressions.Expression<Func<TSource, dynamic>> memberSelector)
     {
-        return GetAttributes<TSource, System.ComponentModel.DescriptionAttribute>(memberSelector, false).FirstOrDefault()?.Description;
+        return Attributes<TSource, System.ComponentModel.DescriptionAttribute>(memberSelector, false).FirstOrDefault()?.Description;
     }
-    public static string GetDescription<TSource>(string memberName)
+    public static string Description<TSource>(string memberName)
     {
         var member = typeof(TSource).GetMember(memberName).FirstOrDefault();
         if (member == null) return null;
@@ -305,11 +182,11 @@ public sealed class Fn
         var desc = (System.ComponentModel.DescriptionAttribute)member.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false).FirstOrDefault();
         return desc == null ? null : desc.Description;
     }
-    public static string GetDisplayName<TSource>(Linq.Expressions.Expression<Func<TSource, dynamic>> memberSelector)
+    public static string DisplayName<TSource>(Linq.Expressions.Expression<Func<TSource, dynamic>> memberSelector)
     {
-        return GetAttributes<TSource, System.ComponentModel.DisplayNameAttribute>(memberSelector, false).FirstOrDefault()?.DisplayName;
+        return Attributes<TSource, System.ComponentModel.DisplayNameAttribute>(memberSelector, false).FirstOrDefault()?.DisplayName;
     }
-    public static string GetDisplayName<TSource>(string memberName)
+    public static string DisplayName<TSource>(string memberName)
     {
         var member = typeof(TSource).GetMember(memberName).FirstOrDefault();
         if (member == null) return null;
@@ -317,7 +194,7 @@ public sealed class Fn
         var desc = (System.ComponentModel.DisplayNameAttribute)member.GetCustomAttributes(typeof(System.ComponentModel.DisplayNameAttribute), false).FirstOrDefault();
         return desc == null ? null : desc.DisplayName;
     }
-    public static TAttribute[] GetAttributes<TSource, TAttribute>(Linq.Expressions.Expression<Func<TSource, dynamic>> memberSelector, bool inherit) where TAttribute : Attribute
+    public static TAttribute[] Attributes<TSource, TAttribute>(Linq.Expressions.Expression<Func<TSource, dynamic>> memberSelector, bool inherit) where TAttribute : Attribute
     {
         var member = (Linq.Expressions.MemberExpression)memberSelector.Body;
         return (TAttribute[])member.Member.GetCustomAttributes(typeof(TAttribute), inherit);
@@ -330,34 +207,19 @@ public sealed class Fn
 
     public static string NewGuid()
     {
-        return System.Guid.NewGuid().ToString();
+        return System.Guid.NewGuid().ToString("N");
     }
 
-    public static string NewDir()
+    public static string NewTempDir()
     {
         string tempDir = Path.Combine(TempDir, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDir);
         return tempDir;
     }
-    public static string NewFile(string extension = ".tmp")
+    public static string NewTempFile(string extension = ".tmp")
     {
         return TempDir + Guid.NewGuid().ToString("N") + extension;
     }
-
-    public static string Zip(string srcDirName)
-    {
-        return Compress.Zip(srcDirName);
-    }
-    /// <summary>
-    /// Extracts all of the files in the specified zip archive to temporary directory on the file system.
-    /// </summary>
-    /// <param name="srcFileName">The path on the file system to the archive that is to be extracted.</param>
-    /// <returns>The path to the destination directory on the file system.</returns>
-    public static string ZipExtract(string srcFileName)
-    {
-        return Compress.ZipExtract(srcFileName, true);
-    }
-
 
     /// <summary>
     /// Execute command with cmd.exe or /bin/bash then exit.
@@ -439,5 +301,10 @@ public sealed class Fn
         var IpEntry = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName());
         var ips = IpEntry.AddressList.Where(c => c.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork || c.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6).Select(c => c.ToString()).ToArray();
         return ips.Any(c => c == host);
+    }
+
+    public static void CopyTo(string srcDirName, string destDirName)
+    {
+        new DirectoryInfo(srcDirName).CopyTo(destDirName);
     }
 }

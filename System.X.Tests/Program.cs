@@ -11,57 +11,13 @@ namespace System.X.Tests
 {
     class Program
     {
-
         static void Main(string[] args)
         {
-            // System.Linq.Queryable.Contains(values,);
-
-            // var mthods = typeof(System.Linq.Queryable).GetMethods(Reflection.BindingFlags.Static | Reflection.BindingFlags.Public | Reflection.BindingFlags.InvokeMethod).Where(c => c.Name == "Contains");
-            //IEnumerable<string> dd = new List<string>() { "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "b", "c", "1", "2", "3", "a", "b", "c", "1", "2", "3", "a", "b", "c", "Z" };
-            List<UserEntity> userList = new List<UserEntity>();
-            userList.Add(new UserEntity() { Id = 1, Name = "a1", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 1, Name = "超级管理员" } }, Department = new Department() { Id = 1, Name = "研发部", Duty = new DepartmentDuty() { Id = 1 } } });
-            userList.Add(new UserEntity() { Id = 2, Name = "b", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = new Department() { Id = 1, Name = "研发部", Duty = new DepartmentDuty() { Id = 1 } } });
-            userList.Add(new UserEntity() { Id = 3, Name = "c", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = new Department() { Id = 2, Name = "人事部", Duty = new DepartmentDuty() { Id = 2 } } });
-            //userList.Add(new UserEntity() { Id = 4, Name = "d", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = new Department() { Id = 2, Name =null, Duty = new DepartmentDuty() { Id = 3 } } });
-            userList.Add(new UserEntity() { Id = 5, Name = "e", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = new Department() { Id = 3, Name = "财务部", Duty = new DepartmentDuty() { Id = 3 } } });
-            userList.Add(new UserEntity() { Id = 6, Name = "a2", CreateDate = DateTime.Now, Roles = new List<Role>() { new Role() { Id = 2, Name = "管理员" } }, Department = null });
-            var query = userList.AsQueryable();
-
-            //var cc7 = Expression.Lambda<Func<UserEntity, bool>>(Expression.Constant(true), null);
-
-            var data1 = new string[] { "1", "2", "4" };
-            var data2 = new int[] { 1, 2, 4 };
-            //var predicate = Fn.Expression.NotEqual<UserEntity>("Department", null);
-            var predicate = Fn.Expression.Contains<UserEntity>("Name", "a", "b");
-            // var predicate = Fn.Expression.Except<UserEntity>("Id", data1);
-
-            var dd = userList.AsQueryable().Where(c => !data2.Contains(c.Id));
-            var data = query.Where(predicate).ToList();
-
-
-
-            int? d1 = null;
-            int? de = 3;
-            bool bb1 = Convert.IsDBNull(d1);
-
-            bool bb2 = de.GetType() == typeof(Nullable<int>);
-            bool bb3 = typeof(Nullable<int>).IsGenericType;
-
-            int de1 = 3;
-            int? de4 = (int?)3;
-            int? de5 = (int?)null;
-            Fn.Expression.Constant(new string[] { "1", "2", null, "4" }, typeof(Nullable<int>));
-            var exp = Expression.Constant(null, typeof(int?));
-            var watch = new Diagnostics.Stopwatch();
-
-            var c1 = Expression.Constant(null, typeof(int?));
-            var c2 = Expression.Constant(null);
-            var c3 = Expression.Constant(null, typeof(string));
-
-            dynamic cc = 3;
-            watch.Start();
-            watch.Stop();
-            Console.WriteLine(watch.ElapsedTicks);
+            //var di = new System.IO.DirectoryInfo(@"D:\Downloads\dji_thermal_sdk_v1.1_20211029");
+            //di.CopyTo(@"D:\generic");
+            //watch.Start();
+            //watch.Stop();
+            //Console.WriteLine(watch.ElapsedTicks);
         }
     }
     public class Base32Encoding
