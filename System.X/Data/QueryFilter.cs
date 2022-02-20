@@ -48,41 +48,42 @@ public enum QueryMode
     /// <summary>
     /// NotEqual
     /// </summary>
-    NTEQ,
-    /// <summary>
-    /// StartWith
-    /// </summary>
-    SW,
-    /// <summary>
-    /// EndWith
-    /// </summary>
-    EW,
-    /// <summary>
-    /// Like
-    /// </summary>
-    LK,
-    /// <summary>
-    /// In
-    /// </summary>
-    IN,
-    /// <summary>
-    /// NotIn
-    /// </summary>
-    NTIN,
+    NTEQ = 1,
     /// <summary>
     /// GreaterThan
     /// </summary>
-    GT,
+    GT = 2,
     /// <summary>
     /// GreaterThanOrEqual
     /// </summary>
-    GTEQ,
+    GTEQ = 3,
     /// <summary>
     /// LessThan
     /// </summary>
-    LT,
+    LT = 4,
     /// <summary>
     /// LessThanOrEqual
     /// </summary>
-    LTEQ
+    LTEQ = 5,
+    /// <summary>
+    /// In
+    /// </summary>
+    IN = 6,
+    /// <summary>
+    /// NotIn
+    /// </summary>
+    NTIN = 7,
+    /// <summary>
+    /// Like
+    /// </summary>
+    LK = 8,
+    /// <summary>
+    /// StartWith
+    /// </summary>
+    /// 
+    SW = 9,
+    /// <summary>
+    /// EndWith
+    /// </summary>
+    EW = 10
 }

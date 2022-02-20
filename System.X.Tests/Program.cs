@@ -6,6 +6,7 @@ using System.Text;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Linq.Expressions;
+using System.SDKs.Dji;
 
 namespace System.X.Tests
 {
@@ -13,6 +14,15 @@ namespace System.X.Tests
     {
         static void Main(string[] args)
         {
+            //byte[] data = System.IO.File.ReadAllBytes("D://DJI_0001_R.JPG");
+            //using (DjiThermal dji = new DjiThermal())
+            //{
+            //    if (dji.Analysis(data))
+            //    {
+            //        var tm = dji.GetTemp();
+            //    }
+            //}
+           
             //var di = new System.IO.DirectoryInfo(@"D:\Downloads\dji_thermal_sdk_v1.1_20211029");
             //di.CopyTo(@"D:\generic");
             //watch.Start();

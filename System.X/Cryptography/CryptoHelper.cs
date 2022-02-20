@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace System.X.Cryptography
+﻿namespace System.X.Cryptography
 {
     public sealed class CryptoHelper
     {

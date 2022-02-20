@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "R6KPnZ6XJb/kuXe8r/l3VGaCXCsux3YzUagAq5afk8a1Bk3I9iM9h3hPGWa/6E67J9ufpGs37U9IoM4Kdv26Ew==",
+  "success": true,
+  "projectFilePath": "D:\\data\\github\\System.X\\System.SDKs\\System.SDKs.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Administrator\\.nuget\\packages\\skiasharp\\2.80.3\\skiasharp.2.80.3.nupkg.sha512",
+    "C:\\Users\\Administrator\\.nuget\\packages\\system.memory\\4.5.3\\system.memory.4.5.3.nupkg.sha512"
+  ],
+  "logs": []
+}

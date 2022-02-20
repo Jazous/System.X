@@ -2,7 +2,7 @@
 
 public sealed class Fn
 {
-    public static Text.Encoding UTF8 { get => System.Text.Encoding.UTF8; }
+    public static readonly Text.Encoding UTF8 = System.Text.Encoding.UTF8;
     public const string Alphabet = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz";
     static readonly string _tempDir = Path.GetTempPath();
     /// <summary>
@@ -34,7 +34,7 @@ public sealed class Fn
     }
     private Fn()
     {
-
+      
     }
 
     public static bool? ToBoolean(string value)
