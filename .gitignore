@@ -2,16 +2,11 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/System.X/System.X/bin/Debug/netcoreapp3.1
 *.suo
-/System.X/System.X/obj
-/System.X/System.X/bin
-/System.X/System.X.Tests/bin/Debug/netcoreapp3.1
-/System.X/System.X.Tests/obj
-/System.X/System.X.Tests/bin
-/System.X/bin/Debug/netcoreapp3.1
+/System.SDKs/bin
+/System.SDKs/obj
+/System.X/bin
 /System.X/obj
 /System.X.Tests/obj
+/System.X.Tests/bin
 *.user
-/System.X.Tests/bin/Debug/netcoreapp3.1
-/System.X/bin/Release/netcoreapp3.1

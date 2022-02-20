@@ -15,7 +15,12 @@
       "ProjectGuid": "d4764189-2c5b-4d39-937a-df0c620e43de",
       "DisplayName": "System.X.Tests",
       "ColorIndex": 1
+    },
+    "5e72fbc6-4a82-4ec1-82c9-0e10cf01def7": {
+      "ProjectGuid": "5e72fbc6-4a82-4ec1-82c9-0e10cf01def7",
+      "DisplayName": "System.SDKs",
+      "ColorIndex": 2
     }
   },
-  "NextColorIndex": 2
+  "NextColorIndex": 3
 }
