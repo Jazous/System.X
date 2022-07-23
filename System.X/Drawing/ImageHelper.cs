@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
+﻿using SkiaSharp;
 
 namespace System.X.Drawing;
 
@@ -13,310 +11,284 @@ public sealed class ImageHelper
 
     }
 
-    Bitmap InternalThumbnail(Image img, int descWidth, int descHeight, int srcX, int srcY, int srcWidth, int srcHeight)
+    public byte[] ThumbW(byte[] imgData, int width, int quality = 80)
     {
-        var bm = new Bitmap(descWidth, descHeight);
-        using (var g = Graphics.FromImage(bm))
-        {
-            g.CompositingQuality = CompositingQuality.HighQuality;
-            g.SmoothingMode = SmoothingMode.HighQuality;
-            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            g.Clear(Color.Transparent);
-            g.DrawImage(img, new Rectangle(0, 0, descWidth, descHeight), new Rectangle(srcX, srcY, srcWidth, srcHeight), GraphicsUnit.Pixel);
-            g.Dispose();
-            return bm;
-        }
-    }
-    ImageCodecInfo GetImageEncoder(ImageFormat format)
-    {
-        if (format == null) return null;
+        if (imgData == null)
+            throw new ArgumentNullException("imgData");
+        if (width <= 0)
+            throw new ArgumentOutOfRangeException("width");
 
-        var codecs = ImageCodecInfo.GetImageDecoders();
-        foreach (var codec in codecs)
+        using (var ori = SKBitmap.Decode(imgData))
         {
-            if (codec.FormatID == format.Guid)
-                return codec;
+            using (var res = ori.Resize(new SKImageInfo(width, ori.Height * width / ori.Width), SKFilterQuality.Medium))
+            using (var img = SKImage.FromBitmap(res))
+                return img.Encode(SKEncodedImageFormat.Jpeg, quality).ToArray();
         }
-        return null;
     }
-    EncoderParameters GenQualityEncoderParameters(int quality)
+    public byte[] ThumbH(byte[] imgData, int height, int quality = 80)
     {
-        var ep = new EncoderParameters(1);
-        ep.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, new long[1] { quality });
-        return ep;
-    }
+        if (imgData == null)
+            throw new ArgumentNullException("imgData");
+        if (height <= 0)
+            throw new ArgumentOutOfRangeException("height");
 
-    public byte[] Thumbnail(byte[] bytes, float scale, System.Drawing.Imaging.ImageFormat saveFormat = null)
-    {
-        using (var input = new MemoryStream(bytes))
-        using (var output = new MemoryStream())
+        using (var ori = SKBitmap.Decode(imgData))
         {
-            Thumbnail(input, output, scale, saveFormat);
-            return output.GetBuffer();
+            using (var res = ori.Resize(new SKImageInfo(ori.Width * height / ori.Height, height), SKFilterQuality.Medium))
+            using (var img = SKImage.FromBitmap(res))
+                return img.Encode(SKEncodedImageFormat.Jpeg, quality).ToArray();
         }
     }
-    public byte[] Thumbnail(byte[] bytes, float scale, int quality, System.Drawing.Imaging.ImageFormat saveFormat = null)
+    public byte[] Thumb(byte[] imgData, int width, int height, int quality = 80)
     {
-        using (var input = new MemoryStream(bytes))
-        using (var output = new MemoryStream())
-        {
-            Thumbnail(input, output, scale, quality, saveFormat);
-            return output.GetBuffer();
-        }
-    }
-    public byte[] Thumbnail(byte[] bytes, int width, int height, System.Drawing.Imaging.ImageFormat saveFormat = null)
-    {
-        using (var input = new MemoryStream(bytes))
-        using (var output = new MemoryStream())
-        {
-            Thumbnail(input, output, width, height, saveFormat);
-            return output.GetBuffer();
-        }
-    }
-    public byte[] Thumbnail(byte[] bytes, int width, int height, int quality, System.Drawing.Imaging.ImageFormat saveFormat = null)
-    {
-        using (var input = new MemoryStream(bytes))
-        using (var output = new MemoryStream())
-        {
-            Thumbnail(input, output, width, height, quality, saveFormat);
-            return output.GetBuffer();
-        }
-    }
+        if (imgData == null)
+            throw new ArgumentNullException("imgData");
+        if (width <= 0)
+            throw new ArgumentOutOfRangeException("width");
+        if (height <= 0)
+            throw new ArgumentOutOfRangeException("height");
 
-    public void Thumbnail(Stream inputStream, Stream outputStream, float scale, System.Drawing.Imaging.ImageFormat saveFormat = null)
-    {
-        using (var image = Image.FromStream(inputStream))
-        using (var thumb = InternalThumbnail(image, Convert.ToInt32(image.Width * scale), Convert.ToInt32(image.Height * scale), 0, 0, image.Width, image.Height))
-            thumb.Save(outputStream, saveFormat ?? image.RawFormat);
-    }
-    public void Thumbnail(Stream inputStream, Stream outputStream, float scale, int quality, System.Drawing.Imaging.ImageFormat saveFormat = null)
-    {
-        using (var image = Image.FromStream(inputStream))
-        using (var thumb = InternalThumbnail(image, Convert.ToInt32(image.Width * scale), Convert.ToInt32(image.Height * scale), 0, 0, image.Width, image.Height))
-            Compress(thumb, outputStream, quality, saveFormat);
-    }
-    public void Thumbnail(Stream inputStream, Stream outputStream, int width, int height, System.Drawing.Imaging.ImageFormat saveFormat = null)
-    {
-        using (var image = Image.FromStream(inputStream))
-        using (var thumb = InternalThumbnail(image, width, height, 0, 0, image.Width, image.Height))
-            thumb.Save(outputStream, saveFormat ?? image.RawFormat);
-    }
-    public void Thumbnail(Stream inputStream, Stream outputStream, int width, int height, int quality, System.Drawing.Imaging.ImageFormat saveFormat = null)
-    {
-        using (var image = Image.FromStream(inputStream))
-        using (var thumb = InternalThumbnail(image, width, height, 0, 0, image.Width, image.Height))
-            Compress(thumb, outputStream, quality, saveFormat);
-    }
-    public Bitmap Thumbnail(Image image, int width, int height)
-    {
-        int x = 0;
-        int y = 0;
-        int ow = image.Width;
-        int oh = image.Height;
-
-        var k1 = image.Width * height;
-        var k2 = width * image.Height;
-
-        if (k1 > k2)
+        using (var ori = SKBitmap.Decode(imgData))
         {
-            ow = k2 / height;
-            x = (image.Width - ow) / 2;
+            using (var res = ori.Resize(new SKImageInfo(width, height), SKFilterQuality.Medium))
+            using (var img = SKImage.FromBitmap(res))
+                return img.Encode(SKEncodedImageFormat.Jpeg, quality).ToArray();
         }
-        else if (k1 < k2)
+    }
+    public byte[] Cut(byte[] imgData, int width, int height, int xoffset, int yoffset, int quality = 80)
+    {
+        if (imgData == null)
+            throw new ArgumentNullException("imgData");
+
+        if (width <= 0)
+            throw new ArgumentOutOfRangeException("width");
+        if (height <= 0)
+            throw new ArgumentOutOfRangeException("height");
+        if (xoffset <= 0)
+            throw new ArgumentOutOfRangeException("xoffset");
+        if (yoffset <= 0)
+            throw new ArgumentOutOfRangeException("yoffset");
+
+        using (var ori = SKBitmap.Decode(imgData))
+        using (var img = new SKBitmap(new SKImageInfo(width, height)))
         {
-            oh = k1 / width;
-            y = (image.Height - oh) / 2;
+            int right = xoffset + width;
+            int bottom = yoffset + height;
+            if (right > ori.Width)
+                right = ori.Width;
+            if (bottom > ori.Height)
+                bottom = ori.Height;
+
+            if (ori.ExtractSubset(img, new SKRectI(xoffset, yoffset, right, bottom)))
+                using (var data = img.Encode(SKEncodedImageFormat.Jpeg, quality))
+                    return data.ToArray();
+
+            return null;
         }
-        //return img.GetThumbnailImage(width, height, null, IntPtr.Zero);
-        return InternalThumbnail(image, width, height, x, y, ow, oh);
+    }
+    public byte[] ThumbQ(byte[] imgData, int quality = 75)
+    {
+        using (var ori = SKBitmap.Decode(imgData))
+        using (var res = ori.Resize(new SKImageInfo(ori.Width, ori.Height), SKFilterQuality.Medium))
+        using (var img = SKImage.FromBitmap(res))
+            return img.Encode(SKEncodedImageFormat.Jpeg, quality).ToArray();
     }
 
-
-    public byte[] Compress(byte[] bytes, int quality = 80, System.Drawing.Imaging.ImageFormat saveFormat = null)
+    public byte[] DrawRect(byte[] imgData, int x1, int y1, int x2, int y2, SKColor color, int brushSize)
     {
-        using (var input = new MemoryStream(bytes))
-        using (var output = new MemoryStream())
+        using (var ori = SKBitmap.Decode(imgData))
+        using (var canvas = new SKCanvas(ori))
+        using (var paint = new SKPaint())
         {
-            Compress(input, output, quality, saveFormat);
-            return output.GetBuffer();
+            paint.Color = color;
+            paint.StrokeWidth = brushSize;
+            paint.Style = SKPaintStyle.Stroke;
+            canvas.DrawRect(new SKRect(x1, y1, x2, y2), paint);
+            canvas.Save();
+            using (var res = ori.Resize(new SKImageInfo(ori.Width, ori.Height), SKFilterQuality.Medium))
+            using (var img = SKImage.FromBitmap(res))
+                return img.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray();
         }
     }
-    public void Compress(byte[] bytes, Stream outputStream, int quality = 80, System.Drawing.Imaging.ImageFormat saveFormat = null)
-    {
-        using (var input = new MemoryStream(bytes))
-            Compress(input, outputStream, quality, saveFormat);
-    }
-    public void Compress(Stream inputStream, Stream outputStream, int quality = 80, System.Drawing.Imaging.ImageFormat saveFormat = null)
-    {
-        using (var image = Image.FromStream(inputStream))
-            Compress(image, outputStream, quality, saveFormat);
-    }
-    public byte[] Compress(System.Drawing.Image image, int quality = 80, System.Drawing.Imaging.ImageFormat saveFormat = null)
-    {
-        using (var ms = new System.IO.MemoryStream())
-        {
-            Compress(image, ms, quality, saveFormat);
-            return ms.GetBuffer();
-        }
-    }
-    void Compress(System.Drawing.Image image, Stream outputStream, int quality = 80, System.Drawing.Imaging.ImageFormat saveFormat = null)
-    {
-        var coder = GetImageEncoder(saveFormat ?? image.RawFormat);
-        if (coder != null)
-            image.Save(outputStream, coder, GenQualityEncoderParameters(quality));
-        else
-            image.Save(outputStream, saveFormat ?? image.RawFormat);
-    }
 
-    public Bitmap LD(Bitmap image, byte value)
+    public byte[] BW(byte[] imgData)
     {
-        Bitmap bm = new Bitmap(image.Width, image.Height);
-        int x, y, resultR, resultG, resultB;
-        Color pixel;
-        for (x = 0; x < image.Width; x++)
+        int x, y;
+        byte val;
+        SKColor pixel;
+        using (var ori = SKBitmap.Decode(imgData))
         {
-            for (y = 0; y < image.Height; y++)
+            int width = ori.Width;
+            int height = ori.Height;
+            for (x = 0; x < width; x++)
             {
-                pixel = image.GetPixel(x, y);
-                resultR = RGBFloor(pixel.R + value);
-                resultG = RGBFloor(pixel.G + value);
-                resultB = RGBFloor(pixel.B + value);
-                bm.SetPixel(x, y, Color.FromArgb(resultR, resultG, resultB));
+                for (y = 0; y < height; y++)
+                {
+                    pixel = ori.GetPixel(x, y);
+                    val = (byte)((pixel.Red + pixel.Green + pixel.Blue) / 3);
+                    ori.SetPixel(x, y, new SKColor(val, val, val));
+                }
+            }
+            using (var res = ori.Resize(new SKImageInfo(width, height), SKFilterQuality.Medium))
+            using (var img = SKImage.FromBitmap(res))
+            {
+                return img.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray();
             }
         }
-        return bm;
     }
-    int RGBFloor(int value)
+    byte[] LD(byte[] imgData, byte value)
+    {
+        int x, y;
+        byte r, g, b;
+        SKColor pixel;
+        using (var ori = SKBitmap.Decode(imgData))
+        {
+            int width = ori.Width;
+            int height = ori.Height;
+            for (x = 0; x < width; x++)
+            {
+                for (y = 0; y < height; y++)
+                {
+                    pixel = ori.GetPixel(x, y);
+                    r = RGBFloor(pixel.Red + value);
+                    g = RGBFloor(pixel.Green + value);
+                    b = RGBFloor(pixel.Blue + value);
+                    ori.SetPixel(x, y, new SKColor(r, g, b));
+                }
+            }
+            using (var res = ori.Resize(new SKImageInfo(width, height), SKFilterQuality.Medium))
+            using (var img = SKImage.FromBitmap(res))
+            {
+                return img.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray();
+            }
+        }
+    }
+    byte RGBFloor(int value)
     {
         if (value < 0) return 0;
         if (value > 255) return 255;
-        return value;
+        return (byte)value;
     }
-    public Bitmap ReverseColor(Bitmap image)
+    public byte[] RevColor(byte[] imgData)
     {
-        Bitmap bm = new Bitmap(image.Width, image.Height);
-        int x, y, r, g, b;
-        Color pixel;
-        for (x = 0; x < image.Width; x++)
-        {
-            for (y = 0; y < image.Height; y++)
-            {
-                pixel = image.GetPixel(x, y);
-                r = 255 - pixel.R;
-                g = 255 - pixel.G;
-                b = 255 - pixel.B;
-                bm.SetPixel(x, y, Color.FromArgb(r, g, b));
-            }
-        }
-        return bm;
-    }
-
-    public Bitmap FilterColor(Bitmap image, X.Drawing.ColorChannel channel)
-    {
-        int width = image.Width;
-        int height = image.Height;
-        Bitmap bm = new Bitmap(width, height);
         int x, y;
-        Color pixel;
-
-        for (x = 0; x < width; x++)
+        byte r, g, b;
+        SKColor pixel;
+        using (var ori = SKBitmap.Decode(imgData))
         {
-            for (y = 0; y < height; y++)
+            int width = ori.Width;
+            int height = ori.Height;
+            for (x = 0; x < width; x++)
             {
-                pixel = image.GetPixel(x, y);
-                switch (channel)
+                for (y = 0; y < height; y++)
                 {
-                    case ColorChannel.Red: bm.SetPixel(x, y, Color.FromArgb(0, pixel.G, pixel.B)); break;
-                    case ColorChannel.Green: bm.SetPixel(x, y, Color.FromArgb(pixel.R, 0, pixel.B)); break;
-                    case ColorChannel.Blue: bm.SetPixel(x, y, Color.FromArgb(pixel.R, pixel.G, 0)); break;
-                    case ColorChannel.Red | ColorChannel.Green: bm.SetPixel(x, y, Color.FromArgb(0, 0, pixel.B)); break;
-                    case ColorChannel.Red | ColorChannel.Blue: bm.SetPixel(x, y, Color.FromArgb(0, 0, pixel.B)); break;
-                    case ColorChannel.Green | ColorChannel.Blue: bm.SetPixel(x, y, Color.FromArgb(0, 0, pixel.B)); break;
-                    case ColorChannel.Red | ColorChannel.Green | ColorChannel.Blue: bm.SetPixel(x, y, Color.FromArgb(0, 0, 0)); break;
+                    pixel = ori.GetPixel(x, y);
+                    r = (byte)(255 - pixel.Red);
+                    g = (byte)(255 - pixel.Green);
+                    b = (byte)(255 - pixel.Blue);
+                    ori.SetPixel(x, y, new SKColor(r, g, b));
                 }
             }
+            using (var res = ori.Resize(new SKImageInfo(width, height), SKFilterQuality.Medium))
+            using (var img = SKImage.FromBitmap(res))
+            {
+                return img.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray();
+            }
         }
-        return bm;
     }
 
-    public Bitmap BW(Bitmap image)
+
+    byte[] FilterAlpha(byte[] imgData)
     {
-        int width = image.Width;
-        int height = image.Height;
-        Bitmap bm = new Bitmap(width, height);
-        int x, y, result;
-        Color pixel;
-        for (x = 0; x < width; x++)
-        {
-            for (y = 0; y < height; y++)
-            {
-                pixel = image.GetPixel(x, y);
-                result = (pixel.R + pixel.G + pixel.B) / 3;
-                bm.SetPixel(x, y, Color.FromArgb(result, result, result));
-            }
-        }
-        return bm;
+        return FilterColor(imgData, 0);
     }
-    public Bitmap Flip(Bitmap image, X.Drawing.FlipMode mode)
+    byte[] FilterRed(byte[] imgData)
     {
-        switch (mode)
-        {
-            case FlipMode.Horizontal: return FlipHorizontal(image);
-            case FlipMode.Vertical: return FlipVertical(image);
-            case FlipMode.Both: return FlipBoth(image);
-            default: return image;
-        }
+        return FilterColor(imgData, 1);
     }
-    Bitmap FlipBoth(Bitmap image)
+    byte[] FilterGreen(byte[] imgData)
     {
-        int width = image.Width;
-        int height = image.Height;
-        Bitmap bm = new Bitmap(width, height);
+        return FilterColor(imgData, 2);
+    }
+    byte[] FilterBlue(byte[] imgData)
+    {
+        return FilterColor(imgData, 3);
+    }
+    byte[] FilterColor(byte[] imgData, int channel)
+    {
         int x, y;
-        Color pixel;
-        for (x = 0; x < width; x++)
+        SKColor pixel;
+        using (var ori = SKBitmap.Decode(imgData))
         {
-            for (y = 0; y < height; y++)
+            int width = ori.Width;
+            int height = ori.Height;
+            for (x = 0; x < width; x++)
             {
-                pixel = image.GetPixel(x, y);
-                bm.SetPixel(width - x - 1, height - y - 1, Color.FromArgb(pixel.R, pixel.G, pixel.B));
+                for (y = 0; y < height; y++)
+                {
+                    pixel = ori.GetPixel(x, y);
+                    switch (channel)
+                    {
+                        case 0: ori.SetPixel(x, y, new SKColor(pixel.Red, pixel.Green, pixel.Blue, 0)); break;
+                        case 1: ori.SetPixel(x, y, new SKColor(0, pixel.Green, pixel.Blue, pixel.Alpha)); break;
+                        case 2: ori.SetPixel(x, y, new SKColor(pixel.Red, 0, pixel.Blue, pixel.Alpha)); break;
+                        case 3: ori.SetPixel(x, y, new SKColor(pixel.Red, pixel.Green, 0, pixel.Alpha)); break;
+                    }
+                }
+            }
+            using (var res = ori.Resize(new SKImageInfo(width, height), SKFilterQuality.Medium))
+            using (var img = SKImage.FromBitmap(res))
+            {
+                return img.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray();
             }
         }
-        return bm;
     }
-    Bitmap FlipVertical(Bitmap image)
+
+    byte[] FlipV(byte[] imgData)
     {
-        int width = image.Width;
-        int height = image.Height;
-        Bitmap bm = new Bitmap(width, height);
         int x, y, z;
-        Color pixel;
-        for (y = height - 1; y >= 0; y--)
+        SKColor pixel;
+        using (var ori = SKBitmap.Decode(imgData))
         {
-            for (x = width - 1, z = 0; x >= 0; x--)
+            int width = ori.Width;
+            int height = ori.Height;
+            for (y = height - 1; y >= 0; y--)
             {
-                pixel = image.GetPixel(x, y);
-                bm.SetPixel(z++, y, Color.FromArgb(pixel.R, pixel.G, pixel.B));
+                for (x = width - 1, z = 0; x >= 0; x--)
+                {
+                    pixel = ori.GetPixel(x, y);
+                    ori.SetPixel(z++, y, new SKColor(pixel.Red, pixel.Green, pixel.Blue));
+                }
+            }
+            using (var res = ori.Resize(new SKImageInfo(width, height), SKFilterQuality.Medium))
+            using (var img = SKImage.FromBitmap(res))
+            {
+                return img.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray();
             }
         }
-        return bm;
     }
-    Bitmap FlipHorizontal(Bitmap image)
+    byte[] FlipH(byte[] imgData)
     {
-        int width = image.Width;
-        int height = image.Height;
-        Bitmap bm = new Bitmap(width, height);
         int x, y, z;
-        Color pixel;
-        for (x = 0; x < width; x++)
+        SKColor pixel;
+        using (var ori = SKBitmap.Decode(imgData))
         {
-            for (y = height - 1, z = 0; y >= 0; y--)
+            int width = ori.Width;
+            int height = ori.Height;
+            for (x = 0; x < width; x++)
             {
-                pixel = image.GetPixel(x, y);
-                bm.SetPixel(x, z++, Color.FromArgb(pixel.R, pixel.G, pixel.B));
+                for (y = height - 1, z = 0; y >= 0; y--)
+                {
+                    pixel = ori.GetPixel(x, y);
+                    ori.SetPixel(x, z++, new SKColor(pixel.Red, pixel.Green, pixel.Blue));
+                }
+            }
+            using (var res = ori.Resize(new SKImageInfo(width, height), SKFilterQuality.Medium))
+            using (var img = SKImage.FromBitmap(res))
+            {
+                return img.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray();
             }
         }
-        return bm;
     }
 
     public byte[] QRCode(string content, int pixel = 11, int version = -1)
@@ -325,13 +297,6 @@ public sealed class ImageHelper
         using (var data = gene.CreateQrCode(content, QRCoder.QRCodeGenerator.ECCLevel.M, true, true, QRCoder.QRCodeGenerator.EciMode.Utf8, version))
         using (var code = new QRCoder.PngByteQRCode(data))
             return code.GetGraphic(pixel);
-    }
-    public void QRCode(string content, string destFileName, int pixel = 11, int version = -1)
-    {
-        using (var gene = new QRCoder.QRCodeGenerator())
-        using (var data = gene.CreateQrCode(content, QRCoder.QRCodeGenerator.ECCLevel.M, true, true, QRCoder.QRCodeGenerator.EciMode.Utf8, version))
-        using (var code = new QRCoder.PngByteQRCode(data))
-            File.WriteAllBytes(destFileName, code.GetGraphic(pixel));
     }
 
     public byte[] BarCode128(string content, int width = 250, int heigth = 50)
@@ -344,32 +309,9 @@ public sealed class ImageHelper
             bc.LabelFont = new System.Drawing.Font(System.Drawing.FontFamily.GenericMonospace, heigth * 0.3f, System.Drawing.FontStyle.Regular);
             using (var img = bc.Encode(BarcodeLib.TYPE.CODE128, content, System.Drawing.Color.Black, System.Drawing.Color.White, width, heigth))
             {
-                img.Save(ms, ImageFormat.Jpeg);
+                img.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
                 return ms.GetBuffer();
             }
-        }
-    }
-    public void BarCode128(string content, string srcFileName, int width = 250, int heigth = 50)
-    {
-        using (var ms = new MemoryStream())
-        using (var bc = new BarcodeLib.Barcode())
-        {
-            bc.IncludeLabel = true;
-            bc.Alignment = BarcodeLib.AlignmentPositions.CENTER;
-            bc.LabelFont = new System.Drawing.Font(System.Drawing.FontFamily.GenericMonospace, heigth * 0.3f, System.Drawing.FontStyle.Regular);
-            using (var img = bc.Encode(BarcodeLib.TYPE.CODE128, content, System.Drawing.Color.Black, System.Drawing.Color.White, width, heigth))
-            {
-                img.Save(ms, ImageFormat.Jpeg);
-                System.IO.File.WriteAllBytes(srcFileName, ms.GetBuffer());
-            }
-        }
-    }
-    public byte[] GetBytes(System.Drawing.Image image)
-    {
-        using (var ms = new System.IO.MemoryStream())
-        {
-            image.Save(ms, image.RawFormat);
-            return ms.GetBuffer();
         }
     }
 }

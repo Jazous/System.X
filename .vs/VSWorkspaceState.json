@@ -1,10 +1,8 @@
 {
   "ExpandedNodes": [
     "",
-    "\\System.X",
-    "\\System.X.Tests",
-    "\\System.X\\Linq"
+    "\\System.SDKs\\Dji",
+    "\\System.X\\Drawing"
   ],
-  "SelectedNode": "\\System.X.sln",
   "PreviewInSolutionExplorer": false
 }

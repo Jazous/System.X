@@ -130,6 +130,14 @@
         {
             return Hash("SHA512", value);
         }
+        public string SHA512(byte[] bytes)
+        {
+            return Hash("SHA512", bytes);
+        }
+        public string SHA512(global::System.IO.Stream inputStream)
+        {
+            return Hash("SHA512", inputStream);
+        }
         string Hash(string hashName, byte[] bytes)
         {
             using (var provider = Security.Cryptography.HashAlgorithm.Create(hashName))

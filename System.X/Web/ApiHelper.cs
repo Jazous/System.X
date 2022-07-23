@@ -6,21 +6,6 @@ public sealed class ApiHelper
 
     private ApiHelper() { }
 
-    public async Task<string> Get(string url, string? token, int timeout = 60)
-    {
-        using (var client = new System.Net.Http.HttpClient())
-        {
-            client.Timeout = TimeSpan.FromSeconds(timeout);
-            client.DefaultRequestHeaders.Add("Accept", "text/plain");
-            client.DefaultRequestHeaders.AcceptCharset.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("utf-8"));
-            client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", token);
-            using (var response = await client.GetAsync(url))
-            {
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadAsStringAsync();
-            }
-        }
-    }
     public async Task<string> GetJson(string url, string? token, int timeout = 60)
     {
         using (var client = new System.Net.Http.HttpClient())
@@ -138,7 +123,7 @@ public sealed class ApiHelper
         content.Headers.TryAddWithoutValidation("Timestamp", DateTime.Now.ToString("yyyyMMddHHmmssttt"));
         return PostAsync(url, content, cert, timeout);
     }
-    public Task<string> Post(string url, string? token, IList<NameValue> formData, int timeout = 60)
+    public Task<string> PostForm(string url, string? token, IList<NameValue> formData, int timeout = 60)
     {
         var content = new MultipartFormDataContent();
         if (formData != null)

@@ -3,8 +3,6 @@
 ################################################################################
 
 *.suo
-/System.SDKs/bin
-/System.SDKs/obj
 /System.X/bin
 /System.X/obj
 /System.X.Tests/obj

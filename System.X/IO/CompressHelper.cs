@@ -21,7 +21,7 @@ public sealed class CompressHelper
 
         return sb.ToString();
     }
-    public string GZipExtract(string value)
+    public string UnGZip(string value)
     {
         var bytes = new byte[value.Length];
         int index = 0;
@@ -29,7 +29,7 @@ public sealed class CompressHelper
         foreach (char item in items)
             bytes[index++] = (byte)item;
 
-        var buffer = GZipExtract(bytes);
+        var buffer = UnGZip(bytes);
         var sb = new System.Text.StringBuilder(buffer.Length);
         for (int i = 0; i < buffer.Length; i++)
             sb.Append((char)buffer[i]);
@@ -39,42 +39,51 @@ public sealed class CompressHelper
 
     public byte[] GZip(byte[] bytes)
     {
-        using (var ms = new System.IO.MemoryStream())
+        using (var inputStream = new System.IO.MemoryStream())
         {
-            using (var sw = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionMode.Compress))
-                sw.Write(bytes, 0, bytes.Length);
+            using (var gZipStream = new System.IO.Compression.GZipStream(inputStream, System.IO.Compression.CompressionMode.Compress))
+                gZipStream.Write(bytes, 0, bytes.Length);
 
-            return ms.GetBuffer();
+            return inputStream.ToArray();
         }
     }
-    public async Threading.Tasks.Task<byte[]> GZipAsync(byte[] bytes)
+    public async Task<byte[]> GZipAsync(byte[] bytes)
     {
-        using (var ms = new System.IO.MemoryStream())
+        using (var inputStream = new System.IO.MemoryStream())
         {
-            using (var sw = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionMode.Compress))
-                await sw.WriteAsync(bytes, 0, bytes.Length);
-
-            return ms.GetBuffer();
+            using (var gZipStream = new System.IO.Compression.GZipStream(inputStream, System.IO.Compression.CompressionMode.Compress))
+            {
+                await gZipStream.WriteAsync(bytes, 0, bytes.Length);
+                return inputStream.ToArray();
+            }
         }
     }
-    public byte[] GZipExtract(byte[] bytes)
+    public byte[] UnGZip(byte[] bytes)
     {
-        using (var ms = new System.IO.MemoryStream(bytes))
-        using (var sr = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionMode.Decompress))
+        using (var inputStream = new System.IO.MemoryStream(bytes))
         {
-            byte[] buffer = new byte[sr.Length];
-            sr.Read(buffer, 0, buffer.Length);
-            return buffer;
+            using (var gZipStream = new System.IO.Compression.GZipStream(inputStream, System.IO.Compression.CompressionMode.Decompress))
+            {
+                using (var outputStream = new System.IO.MemoryStream())
+                {
+                    gZipStream.CopyTo(outputStream);
+                    return outputStream.ToArray();
+                }
+            }
         }
     }
-    public async Threading.Tasks.Task<byte[]> GZipExtractAsync(byte[] bytes)
+    public async Task<byte[]> UnGZipAsync(byte[] bytes)
     {
-        using (var ms = new System.IO.MemoryStream(bytes))
-        using (var sr = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionMode.Decompress))
+        using (var inputStream = new System.IO.MemoryStream(bytes))
         {
-            byte[] buffer = new byte[sr.Length];
-            await sr.ReadAsync(buffer, 0, buffer.Length);
-            return buffer;
+            using (var gZipStream = new System.IO.Compression.GZipStream(inputStream, System.IO.Compression.CompressionMode.Decompress))
+            {
+                using (var outputStream = new System.IO.MemoryStream())
+                {
+                    await gZipStream.CopyToAsync(outputStream);
+                    return outputStream.ToArray();
+                }
+            }
         }
     }
 
@@ -85,18 +94,19 @@ public sealed class CompressHelper
     /// <returns>The absolute path of the archive to be created.</returns>
     public string Zip(string srcDirName)
     {
-        string tempFile = Path.GetTempFileName();
-        Zip(srcDirName, tempFile);
-        return tempFile;
+        var dirInfo = new DirectoryInfo(srcDirName);
+        string destFileName = Path.Combine(dirInfo.Parent.FullName, dirInfo.Name + ".zip");
+        System.IO.Compression.ZipFile.CreateFromDirectory(srcDirName, destFileName);
+        return destFileName;
     }
     /// <summary>
     /// Creates a zip archive that contains the files and directories from the specified directory.
     /// </summary>
     /// <param name="srcDirName">The path to the directory to be archived, specified as a relative or absolute path.</param>
     /// <param name="destFileName">The path of the archive to be created, specified as a relative or absolute path.</param>
-    public void Zip(string srcDirName, string destFileName)
+    public void Zip(string srcDirName, string destFileName, System.IO.Compression.CompressionLevel compressionLevel = System.IO.Compression.CompressionLevel.Optimal, bool includeBaseDirectory = true)
     {
-        System.IO.Compression.ZipFile.CreateFromDirectory(srcDirName, destFileName);
+        System.IO.Compression.ZipFile.CreateFromDirectory(srcDirName, destFileName, compressionLevel, includeBaseDirectory);
     }
     /// <summary>
     /// Extracts all of the files in the specified zip archive to current directory named zip archive fileName without extension on the file system.

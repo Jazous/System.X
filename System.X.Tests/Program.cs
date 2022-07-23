@@ -6,7 +6,6 @@ using System.Text;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Linq.Expressions;
-using System.SDKs.Dji;
 
 namespace System.X.Tests
 {
@@ -14,15 +13,44 @@ namespace System.X.Tests
     {
         static void Main(string[] args)
         {
-            //byte[] data = System.IO.File.ReadAllBytes("D://DJI_0001_R.JPG");
-            //using (DjiThermal dji = new DjiThermal())
-            //{
-            //    if (dji.Analysis(data))
-            //    {
-            //        var tm = dji.GetTemp();
-            //    }
-            //}
-           
+            byte[] bytes = System.IO.File.ReadAllBytes("E:\\3.jpg");
+
+            //byte[] b1 = Fn.Image.ThumbW(bytes, 100, 80);
+            //System.IO.File.WriteAllBytes("E:\\3_x1000_100.jpg", b1);
+
+            //byte[] b2 = Fn.Image.ThumbH(bytes, 100, 80);
+            //System.IO.File.WriteAllBytes("E:\\3_x1000_80.jpg", b2);
+
+            //byte[] b3 = Fn.Image.Compress(bytes, 80);
+            //System.IO.File.WriteAllBytes("E:\\3_ori_90.jpg", b3);
+
+            //byte[] b4 = Fn.Image.Thumb(bytes, 100, 200, 90);
+            //System.IO.File.WriteAllBytes("E:\\3_1.jpg", b4);
+
+            //byte[] b5 = Fn.Image.Cut(bytes, 1200, 1200, 500, 500,  90);
+            //System.IO.File.WriteAllBytes("E:\\3_2.jpg", b5);
+
+            Diagnostics.Stopwatch watch=new Diagnostics.Stopwatch();
+            watch.Start();
+            byte[] b6 = Fn.Image.RevColor(bytes);
+            watch.Stop();
+            Console.WriteLine(watch.ElapsedMilliseconds);
+            System.IO.File.WriteAllBytes("E:\\3_006.jpg", b6);
+
+            //byte[] b7 = Fn.Image.FilterBlue(bytes);
+            //System.IO.File.WriteAllBytes("E:\\3_002.jpg", b7);
+
+            //byte[] b8 = Fn.Image.FlipH(bytes);
+            //System.IO.File.WriteAllBytes("E:\\3_003.jpg", b8);
+
+            //byte[] b9 = Fn.Image.LD(bytes, 50);
+            //System.IO.File.WriteAllBytes("E:\\3_004.jpg", b9);
+
+            //byte[] bx = Fn.Image.DrawRect(bytes, 100, 100, 900, 900, SkiaSharp.SKColors.Red, 4);
+            //System.IO.File.WriteAllBytes("E:\\3_005.jpg", bx);
+
+
+
             //var di = new System.IO.DirectoryInfo(@"D:\Downloads\dji_thermal_sdk_v1.1_20211029");
             //di.CopyTo(@"D:\generic");
             //watch.Start();
